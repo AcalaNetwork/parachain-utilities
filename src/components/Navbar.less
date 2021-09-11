@@ -1,0 +1,28 @@
+@import "../styles/variables";
+
+.ant-layout-header.app-header {
+  position: fixed;
+  z-index: 1;
+  width: 100%;
+  background-color: white;
+  border-bottom: 1px solid @border-gray;
+  padding: 0 25px;
+  font-size: 14px;
+
+  .header-home {
+    gap: 0 !important;
+
+    .header-logo {
+      width: auto;
+      height: 60px;
+      object-fit: cover;
+    }
+    .logo-text {
+      font-size: 18px;
+    }
+  }
+
+  .menu-right {
+    width: 100%;
+  }
+}
