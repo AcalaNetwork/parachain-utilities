@@ -1,26 +1,35 @@
 import { AnyAction } from "redux"
-import { CONFIG_LOADING, SET_UTC_TIME } from "../actions/configActions"
+import { ConfigState } from "../../types"
+import {
+  SELECT_ENDPOINT,
+  SET_CONFIG,
+  SET_UTC_TIME,
+} from "../actions/configActions"
 
-const initialState = {
+const initialState: ConfigState = {
   endpoints: [],
   utcTime: false,
-  isLoading: false,
 }
 
 const configReducer = (
   state = initialState,
   action: AnyAction
-): typeof initialState => {
+): ConfigState => {
   switch (action.type) {
-    case CONFIG_LOADING:
+    case SET_CONFIG:
       return {
         ...state,
-        isLoading: true,
+        ...action.payload,
       }
     case SET_UTC_TIME:
       return {
         ...state,
-        utcTime: action.value,
+        utcTime: action.payload,
+      }
+    case SELECT_ENDPOINT:
+      return {
+        ...state,
+        selectedEndpoint: action.payload,
       }
     default:
       return state

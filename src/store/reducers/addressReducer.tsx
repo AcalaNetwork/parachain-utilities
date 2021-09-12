@@ -1,22 +1,41 @@
-import { AnyAction } from "redux";
+import { AnyAction } from "redux"
+import { AddressState } from "../../types"
 import {
-  ADDRESS_LOADING,
-} from "../actions/addressActions";
+  ADD_ADDRESS,
+  REMOVE_ADDRESS,
+  SET_ADDRESS_LIST,
+} from "../actions/addressActions"
 
-const initialState = {
-  isLoading: false,
-};
+const initialState: AddressState = {
+  list: [],
+}
 
-const addressReducer = (state = initialState, action: AnyAction): typeof initialState => {
+const addressReducer = (
+  state = initialState,
+  action: AnyAction
+): AddressState => {
+  console.log(state)
   switch (action.type) {
-    case ADDRESS_LOADING:
+    case SET_ADDRESS_LIST:
       return {
         ...state,
-        isLoading: true,
-      };
+        list: action.payload,
+      }
+    case ADD_ADDRESS:
+      return {
+        ...state,
+        list: [action.payload, ...state.list],
+      }
+    case REMOVE_ADDRESS:
+      return {
+        ...state,
+        list: state.list.filter(
+          auxAddress => auxAddress.value !== action.payload
+        ),
+      }
     default:
-      return state;
+      return state
   }
-};
+}
 
-export default addressReducer;
+export default addressReducer
