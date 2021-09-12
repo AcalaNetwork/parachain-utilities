@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react"
 import { addAddress } from "../../store/actions/addressActions"
 import { useAppDispatch } from "../../store/hooks"
 import { SubstrateAddress } from "../../types"
+import * as prefixes from "../../utils/ss58-registry.json"
+import { encodeAddress, decodeAddress } from "@polkadot/util-crypto/address"
 
 type ViewFormatsModalProps = {
   selectedAddress?: SubstrateAddress
@@ -13,15 +15,26 @@ type ViewFormatsModalProps = {
 function ViewFormatsModal(props: ViewFormatsModalProps): React.ReactElement {
   const [form] = Form.useForm()
   const dispatch = useAppDispatch()
-  const [formats, setFormats] = useState<string[]>([])
+  const [formats, setFormats] = useState<{ prefix: number; value: string }[]>(
+    []
+  )
 
   const { showModal, setShowModal, selectedAddress } = props
 
   useEffect(() => {
     if (selectedAddress) {
-      const newFormats = []
-      newFormats.push(selectedAddress.value)
-      newFormats.push(selectedAddress.value)
+      const decoded = decodeAddress(selectedAddress.value)
+      console.log(decoded)
+      const newFormats: { prefix: number; value: string }[] = []
+      for (const auxPrefix of prefixes.registry) {
+        console.log(auxPrefix.prefix)
+        if (auxPrefix.prefix !== 46 && auxPrefix.prefix !== 47) {
+          newFormats.push({
+            prefix: auxPrefix.prefix,
+            value: encodeAddress(decoded, auxPrefix.prefix),
+          })
+        }
+      }
       setFormats(newFormats)
     }
   }, [selectedAddress])
@@ -47,7 +60,11 @@ function ViewFormatsModal(props: ViewFormatsModalProps): React.ReactElement {
       <Row>{selectedAddress?.value}</Row>
       <h2>Other formats</h2>
       {formats.map((auxFormat, index) => {
-        return <Row key={index}>{auxFormat}</Row>
+        return (
+          <Row key={index}>
+            Prefix {auxFormat.prefix} - {auxFormat.value}
+          </Row>
+        )
       })}
       <Row justify='end'>
         <Space>
