@@ -1,16 +1,19 @@
+import { DeleteOutlined, DotChartOutlined, PlusOutlined } from "@ant-design/icons"
 import { Button, Row, Space, Table } from "antd"
 import React, { useState } from "react"
-import { removeAddress } from "../../store/actions/addressActions"
+import { deleteAddress } from "../../store/actions/addressActions"
 import { useAppDispatch, useAppSelector } from "../../store/hooks"
 import { SubstrateAddress } from "../../types"
 import AddAddressModal from "./AddAddressModal"
 import "./AddressBook.less"
 import ViewFormatsModal from "./ViewFormatsModal"
 
-const AddressBook = function NavbarComponent(): React.ReactElement {
-  const [showAddAddressModal, setShowAddAddressModal] = useState(false);
-  const [showViewFormatsModal, setShowViewFormatsModal] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState<SubstrateAddress | undefined>();
+function AddressBook(): React.ReactElement {
+  const [showAddAddressModal, setShowAddAddressModal] = useState(false)
+  const [showViewFormatsModal, setShowViewFormatsModal] = useState(false)
+  const [selectedAddress, setSelectedAddress] = useState<
+    SubstrateAddress | undefined
+  >()
   const dispatch = useAppDispatch()
   const addresses = useAppSelector(state => state.address.list)
 
@@ -24,16 +27,25 @@ const AddressBook = function NavbarComponent(): React.ReactElement {
   }
 
   const handleDeleteAddress = (address: SubstrateAddress) => {
-    dispatch(removeAddress(address.value))
+    dispatch(deleteAddress(address.key))
   }
 
   const renderAddressActions = (row: SubstrateAddress) => {
     return (
       <Space>
-        <Button type='default' onClick={() => handleViewFormats(row)}>
+        <Button
+          type='default'
+          icon={<DotChartOutlined />}
+          size='small'
+          onClick={() => handleViewFormats(row)}>
           View Formats
         </Button>
-        <Button type='default' danger onClick={()=> handleDeleteAddress(row)}>
+        <Button
+          type='default'
+          danger
+          icon={<DeleteOutlined />}
+          size='small'
+          onClick={() => handleDeleteAddress(row)}>
           Delete
         </Button>
       </Space>
@@ -47,9 +59,9 @@ const AddressBook = function NavbarComponent(): React.ReactElement {
       key: "name",
     },
     {
-      title: "Address",
-      dataIndex: "value",
-      key: "value",
+      title: "Public key of Address",
+      dataIndex: "key",
+      key: "key",
     },
     {
       title: "Actions",
@@ -57,22 +69,27 @@ const AddressBook = function NavbarComponent(): React.ReactElement {
       render: renderAddressActions,
     },
   ]
-  
+
   return (
-    <div className="address-book-container">
-      <Row>
-        <Button type='primary' onClick={handleAddAddress}>Add address</Button>
+    <div className='address-book-container'>
+      <Row className='mb-3'>
+        <Button
+          type='primary'
+          onClick={handleAddAddress}
+          icon={<PlusOutlined />}>
+          Add address
+        </Button>
       </Row>
-      <Table dataSource={addresses} columns={columns} />      
+      <Table dataSource={addresses} columns={columns} />
       <AddAddressModal
-          showModal={showAddAddressModal}
-          setShowModal={setShowAddAddressModal}
-        />  
-        <ViewFormatsModal
-            selectedAddress={selectedAddress}
-            showModal={showViewFormatsModal}
-            setShowModal={setShowViewFormatsModal}
-          />
+        showModal={showAddAddressModal}
+        setShowModal={setShowAddAddressModal}
+      />
+      <ViewFormatsModal
+        selectedAddress={selectedAddress}
+        showModal={showViewFormatsModal}
+        setShowModal={setShowViewFormatsModal}
+      />
     </div>
   )
 }

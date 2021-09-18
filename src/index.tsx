@@ -4,8 +4,11 @@ import "./index.css"
 import App from "./App"
 import reportWebVitals from "./reportWebVitals"
 import WebFont from "webfontloader"
-import { Provider } from "react-redux";
-import store from "./store";
+import { Provider } from "react-redux"
+import setupStore from "./store"
+import { PersistGate } from "redux-persist/integration/react"
+
+const { store, persistor } = setupStore()
 
 WebFont.load({
   google: {
@@ -14,12 +17,14 @@ WebFont.load({
       "sans-serif",
     ],
   },
-});
+})
 
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
-      <App />
+      <PersistGate loading={null} persistor={persistor}>
+        <App />
+      </PersistGate>
     </Provider>
   </React.StrictMode>,
   document.getElementById("root")

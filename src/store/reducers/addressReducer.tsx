@@ -2,7 +2,7 @@ import { AnyAction } from "redux"
 import { AddressState } from "../../types"
 import {
   ADD_ADDRESS,
-  REMOVE_ADDRESS,
+  DELETE_ADDRESS,
   SET_ADDRESS_LIST,
 } from "../actions/addressActions"
 
@@ -14,7 +14,6 @@ const addressReducer = (
   state = initialState,
   action: AnyAction
 ): AddressState => {
-  console.log(state)
   switch (action.type) {
     case SET_ADDRESS_LIST:
       return {
@@ -26,11 +25,11 @@ const addressReducer = (
         ...state,
         list: [action.payload, ...state.list],
       }
-    case REMOVE_ADDRESS:
+    case DELETE_ADDRESS:
       return {
         ...state,
         list: state.list.filter(
-          auxAddress => auxAddress.value !== action.payload
+          auxAddress => auxAddress.key !== action.payload
         ),
       }
     default:

@@ -1,8 +1,10 @@
-import { Button, Form, Input, Modal, Row, Space } from "antd"
-import React, { useEffect, useState } from "react"
+import { Button, Form, Input, Modal, Row, Space, message } from "antd"
+import React, { useEffect } from "react"
 import { addAddress } from "../../store/actions/addressActions"
-import { useAppDispatch } from "../../store/hooks"
+import { useAppDispatch, useAppSelector } from "../../store/hooks"
 import { SubstrateAddress } from "../../types"
+import { decodeAddress } from "@polkadot/util-crypto/address"
+import { transformAddress } from "../../utils/UtilsFunctions"
 
 type AddAddressModalProps = {
   showModal: boolean
@@ -12,12 +14,35 @@ type AddAddressModalProps = {
 function AddAddressModal(props: AddAddressModalProps): React.ReactElement {
   const [form] = Form.useForm()
   const dispatch = useAppDispatch()
-  
+  const addresses = useAppSelector(state => state.address.list)
+
   const { showModal, setShowModal } = props
+  useEffect(() => {
+    form.resetFields()
+  }, [showModal])
 
   const onFormSubmit = (address: SubstrateAddress) => {
-    dispatch(addAddress(address))
-    handleClose()
+    try {
+      const decodedValue = decodeAddress(address.key)
+      const hexValue = "0x" + Buffer.from(decodedValue).toString("hex")
+      const checkExisting = addresses.find(
+        auxAddress => auxAddress.key === hexValue
+      )
+      if (checkExisting) {
+        message.error(`Address already exists with name ${checkExisting.name}`)
+        return
+      }
+      dispatch(
+        addAddress({
+          ...address,
+          key: hexValue,
+          transformed: transformAddress(hexValue),
+        })
+      )
+      handleClose()
+    } catch (err) {
+      message.error("Error: Invalid address")
+    }
   }
 
   const handleClose = () => {
@@ -29,7 +54,7 @@ function AddAddressModal(props: AddAddressModalProps): React.ReactElement {
       className='add-address-modal'
       visible={showModal}
       title='Add address'
-      okText='Create'
+      okText='Add'
       onCancel={handleClose}
       footer={null}>
       <Form
@@ -37,7 +62,8 @@ function AddAddressModal(props: AddAddressModalProps): React.ReactElement {
         name='add-address-form'
         form={form}
         initialValues={{
-          gmtDifference: 0,
+          name: "",
+          value: "",
         }}
         onFinish={onFormSubmit}>
         <Form.Item
@@ -53,7 +79,7 @@ function AddAddressModal(props: AddAddressModalProps): React.ReactElement {
         </Form.Item>
         <Form.Item
           label='Address'
-          name='value'
+          name='key'
           rules={[
             {
               required: true,
@@ -73,7 +99,7 @@ function AddAddressModal(props: AddAddressModalProps): React.ReactElement {
                 Cancel
               </Button>
               <Button type='primary' htmlType='submit'>
-                Create
+                Add
               </Button>
             </Space>
           </Row>

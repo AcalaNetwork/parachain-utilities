@@ -1,10 +1,12 @@
-import { Button, Form, Input, Modal, Row, Space } from "antd"
+import { Button, Form, Input, message, Modal, Row, Space, Table } from "antd"
 import React, { useEffect, useState } from "react"
 import { addAddress } from "../../store/actions/addressActions"
 import { useAppDispatch } from "../../store/hooks"
-import { SubstrateAddress } from "../../types"
+import { SubstrateAddress, TransformedSubstrateAddress } from "../../types"
 import * as prefixes from "../../utils/ss58-registry.json"
 import { encodeAddress, decodeAddress } from "@polkadot/util-crypto/address"
+import CopyToClipboard from "react-copy-to-clipboard"
+import { CopyOutlined } from "@ant-design/icons"
 
 type ViewFormatsModalProps = {
   selectedAddress?: SubstrateAddress
@@ -13,70 +15,61 @@ type ViewFormatsModalProps = {
 }
 
 function ViewFormatsModal(props: ViewFormatsModalProps): React.ReactElement {
-  const [form] = Form.useForm()
-  const dispatch = useAppDispatch()
-  const [formats, setFormats] = useState<{ prefix: number; value: string }[]>(
-    []
-  )
-
   const { showModal, setShowModal, selectedAddress } = props
 
-  useEffect(() => {
-    if (selectedAddress) {
-      const decoded = decodeAddress(selectedAddress.value)
-      console.log(decoded)
-      const newFormats: { prefix: number; value: string }[] = []
-      for (const auxPrefix of prefixes.registry) {
-        console.log(auxPrefix.prefix)
-        if (auxPrefix.prefix !== 46 && auxPrefix.prefix !== 47) {
-          newFormats.push({
-            prefix: auxPrefix.prefix,
-            value: encodeAddress(decoded, auxPrefix.prefix),
-          })
-        }
-      }
-      setFormats(newFormats)
-    }
-  }, [selectedAddress])
-
-  const onFormSubmit = (address: SubstrateAddress) => {
-    dispatch(addAddress(address))
-    handleClose()
+  const renderCopyToClipboard = (row: TransformedSubstrateAddress) => {
+    return (
+      <CopyToClipboard
+        onCopy={() => message.success("Address copied to Clipboard!")}
+        text={row.value}>
+        <Button type='default' size='middle' icon={<CopyOutlined />} />
+      </CopyToClipboard>
+    )
   }
 
   const handleClose = () => {
     setShowModal(false)
   }
 
+  const columns = [
+    {
+      title: "Prefix",
+      dataIndex: "prefix",
+      key: "prefix",
+    },
+    {
+      title: "Transformed Address",
+      dataIndex: "value",
+      key: "value",
+    },
+    {
+      title: "Copy",
+      key: "value",
+      render: renderCopyToClipboard,
+    },
+  ]
+
   return (
     <Modal
       className='view-formats-modal'
       visible={showModal}
-      title='View formats'
+      title={`View formats of ${selectedAddress?.name}`}
       onCancel={handleClose}
-      footer={null}>
-      <h2>Address</h2>
-      <Row>{selectedAddress?.name}</Row>
-      <Row>{selectedAddress?.value}</Row>
-      <h2>Other formats</h2>
-      {formats.map((auxFormat, index) => {
-        return (
-          <Row key={index}>
-            Prefix {auxFormat.prefix} - {auxFormat.value}
-          </Row>
-        )
-      })}
-      <Row justify='end'>
+      footer={null}
+      width={800}>
+      <Row align='middle' className='mb-3'>
         <Space>
-          <Button
-            htmlType='button'
-            onClick={() => {
-              handleClose()
-            }}>
-            Close
-          </Button>
+          <h3 className='mb-0'>Public Key:</h3>
+          <div>{selectedAddress?.key}</div>
+          <CopyToClipboard
+            onCopy={() => message.success("Public Key copied to Clipboard!")}
+            text={selectedAddress?.key || ""}>
+            <Button type='default' size='middle' icon={<CopyOutlined />} />
+          </CopyToClipboard>
         </Space>
       </Row>
+      {/* <Row>Public Key{selectedAddress?.key}</Row> */}
+      <Table dataSource={selectedAddress?.transformed} columns={columns} />
     </Modal>
   )
 }

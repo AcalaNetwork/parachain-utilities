@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { Layout, Spin } from "antd"
+import { Layout, message, Spin } from "antd"
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom"
 import { createWsEndpoints } from "@polkadot/apps-config"
 import NavbarComponent from "./components/Navbar"
@@ -13,19 +13,62 @@ import BlockAuthor from "./components/BlockAuthor/BlockAuthor"
 import { useAppDispatch, useAppSelector } from "./store/hooks"
 import { replaceText } from "./utils/UtilsFunctions"
 import { setAddressList } from "./store/actions/addressActions"
-import { setConfig } from "./store/actions/configActions"
+import {
+  selectEndpoint,
+  setConfig,
+  setEndpointList,
+} from "./store/actions/configActions"
 import { RPCEndpoint } from "./types"
 
 function App(): React.ReactElement {
   const [isLoading, setIsLoading] = useState(false)
+  const config = useAppSelector(state => {
+    return state.config
+  })
+  const addressList = useAppSelector(state => state.address.list)
   const dispatch = useAppDispatch()
 
   useEffect(() => {
-    loadSavedOrDefaultConfig()
+    setIsLoading(true)
+    loadDefaultEndpoints()
+    setIsLoading(false)
   }, [])
 
-  const loadSavedOrDefaultConfig = () => {
-    console.log('oops')
+  const loadDefaultEndpoints = () => {
+    try {
+      const newEndpoints: RPCEndpoint[] = []
+      // If config has no endpoint, load default configuration
+      if (config.endpoints.length === 0) {
+        const externalList = createWsEndpoints(replaceText)
+        for (const auxEndpoint of externalList) {
+          if (
+            auxEndpoint.value &&
+            !auxEndpoint.isLightClient &&
+            !auxEndpoint.isUnreachable
+          ) {
+            newEndpoints.push({
+              value: auxEndpoint.value,
+              chainName: auxEndpoint.text as string,
+              hostedBy: auxEndpoint.textBy,
+              enabled: false,
+            })
+          }
+        }
+        newEndpoints[0].enabled = true
+        dispatch(setEndpointList(newEndpoints))
+      }
+      // If no endpoint is selected, set the first enabled endpoint as selected
+      if (!config.selectedEndpoint) {
+        dispatch(
+          selectEndpoint(
+            config.endpoints.find(auxEndpoint => auxEndpoint.enabled) ||
+              newEndpoints[0]
+          )
+        )
+      }
+    } catch (err) {
+      message.error("An error ocurred when trying to load default endpoints")
+    }
   }
 
   return (
