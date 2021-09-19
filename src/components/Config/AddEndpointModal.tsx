@@ -1,10 +1,9 @@
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { Button, Form, Input, Modal, Row, Space, message, Spin } from "antd"
 import React, { useEffect, useState } from "react"
-import { addAddress } from "../../store/actions/addressActions"
 import { addEndpoint } from "../../store/actions/configActions"
 import { useAppDispatch, useAppSelector } from "../../store/hooks"
-import { RPCEndpoint, SubstrateAddress } from "../../types"
+import { RPCEndpoint } from "../../types"
 
 type AddEndpointModalProps = {
   showModal: boolean

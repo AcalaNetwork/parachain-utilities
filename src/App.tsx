@@ -12,10 +12,8 @@ import BlockTime from "./components/BlockTime/BlockTime"
 import BlockAuthor from "./components/BlockAuthor/BlockAuthor"
 import { useAppDispatch, useAppSelector } from "./store/hooks"
 import { replaceText } from "./utils/UtilsFunctions"
-import { setAddressList } from "./store/actions/addressActions"
 import {
   selectEndpoint,
-  setConfig,
   setEndpointList,
 } from "./store/actions/configActions"
 import { RPCEndpoint } from "./types"
@@ -25,7 +23,6 @@ function App(): React.ReactElement {
   const config = useAppSelector(state => {
     return state.config
   })
-  const addressList = useAppSelector(state => state.address.list)
   const dispatch = useAppDispatch()
 
   useEffect(() => {

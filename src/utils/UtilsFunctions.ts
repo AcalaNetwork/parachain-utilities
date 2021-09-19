@@ -1,6 +1,6 @@
 import moment, { Moment } from "moment"
-import { encodeAddress, decodeAddress } from "@polkadot/util-crypto/address"
-import { TransformedSubstrateAddress } from "../types"
+import { encodeAddress } from "@polkadot/util-crypto/address"
+import { SubstrateAddress, TransformedSubstrateAddress } from "../types"
 import * as prefixes from "../utils/ss58-registry.json"
 
 export const replaceText = (
@@ -19,19 +19,43 @@ export const replaceText = (
 }
 
 export const transformDate = (
-  dateTime: string,
+  unixTimestamp: number,
   transformUtc: boolean
 ): Moment => {
   let auxMoment
   if (transformUtc) {
-    auxMoment = moment.utc(dateTime)
+    auxMoment = moment.utc(unixTimestamp)
   } else {
-    auxMoment = moment(dateTime)
+    auxMoment = moment(unixTimestamp)
   }
   return auxMoment
 }
 
-export const transformAddress = (key: string): TransformedSubstrateAddress[] => {
+export const formatDate = (
+  unixTimestamp: number,
+  transformUtc: boolean,
+  format = "YYYY-MM-DD HH:mm:ss"
+): string => {
+  return transformDate(unixTimestamp, transformUtc).format(format)
+}
+
+export const toUnixTimestamp = (
+  dateTime: Moment,
+  transformUtc: boolean
+): number => {
+  const simpleDateTime = dateTime.format("YYYY-MM-DD HH:mm:ss")
+  let timestamp
+  if (transformUtc) {
+    timestamp = moment.utc(simpleDateTime)
+  } else {
+    timestamp = moment(simpleDateTime)
+  }
+  return timestamp.valueOf()
+}
+
+export const transformAddress = (
+  key: string
+): TransformedSubstrateAddress[] => {
   const publicKey = Uint8Array.from(Buffer.from(key.substring(2), "hex"))
   const newFormats: TransformedSubstrateAddress[] = []
   for (const auxPrefix of prefixes.registry) {
@@ -43,4 +67,18 @@ export const transformAddress = (key: string): TransformedSubstrateAddress[] => 
     }
   }
   return newFormats
+}
+
+export const findAuthorName = (
+  savedAddresses: SubstrateAddress[],
+  address: string
+): string | undefined => {
+  for (const auxAddress of savedAddresses) {
+    for (const auxTransformed of auxAddress.transformed) {
+      if (auxTransformed.value === address) {
+        return auxAddress.name
+      }
+    }
+  }
+  return undefined
 }

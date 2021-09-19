@@ -1,10 +1,11 @@
-import { BarChartOutlined } from "@ant-design/icons"
+import { BarChartOutlined, CaretRightOutlined } from "@ant-design/icons"
 import { ApiPromise, WsProvider } from "@polkadot/api"
-import { BlockHash, Header } from "@polkadot/types/interfaces"
 import {
   Button,
+  Collapse,
   Form,
   InputNumber,
+  List,
   message,
   Row,
   Select,
@@ -13,6 +14,7 @@ import {
 } from "antd"
 import React, { useState } from "react"
 import { useAppSelector } from "../../store/hooks"
+import { findAuthorName } from "../../utils/UtilsFunctions"
 import "./BlockAuthor.less"
 
 interface BlockAuthorFormValues {
@@ -34,6 +36,7 @@ interface BlockInfo {
 
 function BlockAuthor(): React.ReactElement {
   const [formBlocks] = Form.useForm()
+  const addresses = useAppSelector(state => state.address.list)
   const config = useAppSelector(state => state.config)
   const [results, setResults] = useState<Array<BlockAuthorResult>>([])
   const [isBlockRangeValid, setIsBlockRangeValid] = useState(false)
@@ -65,6 +68,7 @@ function BlockAuthor(): React.ReactElement {
   }
 
   const handleOnCalculate = (values: BlockAuthorFormValues) => {
+    setResults([])
     countBlockAuthors(values)
   }
 
@@ -86,58 +90,49 @@ function BlockAuthor(): React.ReactElement {
       const api = await ApiPromise.create({ provider })
 
       // Load hashes
+      const groupedBlocks: Record<string, BlockInfo[]> = {}
       let loadedUntil = startBlock
-      let allHashes: BlockHash[] = []
       while (loadedUntil <= endBlock) {
         let promiseCount = 0
         const allowedParallel = 5
-        const promises = []
-        while (loadedUntil <= endBlock && promiseCount < allowedParallel) {
-          promises.push(api.rpc.chain.getBlockHash(loadedUntil))
-          loadedUntil += 1
+        let promises = []
+        while (
+          promiseCount < allowedParallel &&
+          loadedUntil + promiseCount <= endBlock
+        ) {
+          promises.push(api.rpc.chain.getBlockHash(loadedUntil + promiseCount))
           promiseCount += 1
         }
         const newHashes = await Promise.all(promises)
-        allHashes = allHashes.concat(newHashes)
-      }
-
-      // Load headers/authors
-      loadedUntil = startBlock
-      let allHeaders: any[] = []
-      while (loadedUntil <= endBlock) {
-        let promiseCount = 0
-        const allowedParallel = 5
-        const promises = []
-        while (loadedUntil <= endBlock && promiseCount < allowedParallel) {
-          promises.push(
-            api.derive.chain.getHeader(allHashes[loadedUntil - startBlock])
-          )
-          loadedUntil += 1
-          promiseCount += 1
+        promises = []
+        for (const hash of newHashes) {
+          promises.push(api.derive.chain.getHeader(hash))
         }
         const newHeaders = await Promise.all(promises)
-        allHeaders = allHeaders.concat(newHeaders)
+        newHeaders.forEach((header, index) => {
+          const author = header?.author?.toString()
+          if (author) {
+            groupedBlocks[author] = [
+              ...(groupedBlocks[author] || []),
+              {
+                number: loadedUntil + index,
+                hash: newHashes[index].toString(),
+              },
+            ]
+          }
+        })
+        loadedUntil += newHashes.length
       }
 
-      const groupBlocks: Record<string, BlockInfo[]> = {}
-      for (const header of allHeaders) {
-        const author = header?.author?.toString()
-        if (author) {
-          groupBlocks[author] = [
-            ...(groupBlocks[author] || []),
-            {
-              number: 1,
-              hash: "",
-            },
-          ]
-        }
-      }
+      provider.disconnect()
+
       const finalResults: BlockAuthorResult[] = []
 
-      for (const author in groupBlocks) {
+      for (const author in groupedBlocks) {
         finalResults.push({
           authorAddress: author,
-          blocks: groupBlocks[author],
+          authorName: findAuthorName(addresses, author),
+          blocks: groupedBlocks[author],
         })
       }
 
@@ -152,11 +147,38 @@ function BlockAuthor(): React.ReactElement {
   }
 
   const renderAuthor = (row: BlockAuthorResult) => {
-    return <div>{row.authorAddress}</div>
+    return (
+      <>
+        {row.authorName && <Row className='address-name'>{row.authorName}</Row>}
+        <Row>{row.authorAddress}</Row>
+      </>
+    )
   }
 
   const renderBlocks = (row: BlockAuthorResult) => {
-    return <div>{row.blocks.length} blocks</div>
+    return (
+      <Collapse
+        accordion={true}
+        expandIcon={({ isActive }) => (
+          <CaretRightOutlined rotate={isActive ? 90 : 0} />
+        )}>
+        <Collapse.Panel
+          className='collapse-blocks'
+          header={`${row.blocks.length} blocks`}
+          key={row.authorAddress}>
+          <List
+            size='small'
+            dataSource={row.blocks}
+            renderItem={item => (
+              <List.Item>
+                <span className='block-number'>{item.number}</span> -{" "}
+                {item.hash}
+              </List.Item>
+            )}
+          />
+        </Collapse.Panel>
+      </Collapse>
+    )
   }
 
   const columns = [
@@ -234,7 +256,7 @@ function BlockAuthor(): React.ReactElement {
             disabled={!isBlockRangeValid || isLoading}
             loading={isLoading}
             htmlType='submit'>
-            Calculate
+            Load Block Authors
           </Button>
         </Form.Item>
       </Form>

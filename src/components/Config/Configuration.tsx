@@ -1,7 +1,6 @@
 import React, { useState } from "react"
 import {
   Button,
-  Checkbox,
   Divider,
   message,
   Row,
@@ -19,8 +18,6 @@ import {
 } from "../../store/actions/configActions"
 import { RPCEndpoint } from "../../types"
 import { CheckOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons"
-import { formatDate } from "@polkadot/types/node_modules/@polkadot/util"
-import { transformDate } from "../../utils/UtilsFunctions"
 import AddEndpointModal from "./AddEndpointModal"
 
 function Configuration(): React.ReactElement {
@@ -92,7 +89,7 @@ function Configuration(): React.ReactElement {
         </Button>
         {config?.selectedEndpoint?.value === row.value ? (
           <Button type='primary' size='small' icon={<CheckOutlined />}>
-            Selected
+            Default
           </Button>
         ) : (
           <Button

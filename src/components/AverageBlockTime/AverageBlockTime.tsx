@@ -1,4 +1,4 @@
-import { BarChartOutlined, LineChartOutlined } from "@ant-design/icons"
+import { BarChartOutlined } from "@ant-design/icons"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import {
   Button,
@@ -200,7 +200,7 @@ function AverageBlockTime(): React.ReactElement {
             disabled={!isBlockRangeValid || isLoading}
             loading={isLoading}
             htmlType='submit'>
-            Calculate
+            Calculate Average Block Time
           </Button>
         </Form.Item>
       </Form>

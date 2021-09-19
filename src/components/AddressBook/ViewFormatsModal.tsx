@@ -1,10 +1,6 @@
-import { Button, Form, Input, message, Modal, Row, Space, Table } from "antd"
-import React, { useEffect, useState } from "react"
-import { addAddress } from "../../store/actions/addressActions"
-import { useAppDispatch } from "../../store/hooks"
+import { Button, message, Modal, Row, Space, Table } from "antd"
+import React from "react"
 import { SubstrateAddress, TransformedSubstrateAddress } from "../../types"
-import * as prefixes from "../../utils/ss58-registry.json"
-import { encodeAddress, decodeAddress } from "@polkadot/util-crypto/address"
 import CopyToClipboard from "react-copy-to-clipboard"
 import { CopyOutlined } from "@ant-design/icons"
 
