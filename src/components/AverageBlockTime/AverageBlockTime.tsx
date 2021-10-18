@@ -10,8 +10,9 @@ import {
   Space,
   Table,
 } from "antd"
-import React, { useState } from "react"
+import React, { useContext, useState } from "react"
 import { useAppSelector } from "../../store/hooks"
+import { ApiContext, ApiContextData } from "../utils/ApiProvider"
 import "./AverageBlockTime.less"
 
 interface AvgBlockTimeFormValues {
@@ -28,6 +29,7 @@ interface AvgBlockTimeResult {
 }
 
 function AverageBlockTime(): React.ReactElement {
+  const { api } = useContext<ApiContextData>(ApiContext)
   const [formBlocks] = Form.useForm()
   const config = useAppSelector(state => state.config)
   const [results, setResults] = useState<Array<AvgBlockTimeResult>>([])
@@ -68,28 +70,40 @@ function AverageBlockTime(): React.ReactElement {
       const { startBlock, endBlock, chain } = values
 
       setIsLoading(true)
-      // Connect to chain
-      const provider = new WsProvider(chain)
 
-      provider.on("error", () => {
-        provider.disconnect()
-        message.error("An error ocurred when trying to connect to the endpoint")
-        setIsLoading(false)
-      })
+      let auxApi
+      let auxProvider = {} as WsProvider
 
-      // Create the API
-      const api = await ApiPromise.create({ provider })
+      // If the chain is the default one, use that connection
+      if (chain === config.selectedEndpoint?.value) {
+        auxApi = api
+      } else {
+        // Connect to chain
+        auxProvider = new WsProvider(chain)
+
+        auxProvider.on("error", () => {
+          auxProvider.disconnect()
+          message.error(
+            "An error ocurred when trying to connect to the endpoint"
+          )
+          setIsLoading(false)
+        })
+
+        // Create the API
+        auxApi = await ApiPromise.create({ provider: auxProvider })
+      }
 
       // Query start block and end block time
       const [startBlockHash, endBlockHash] = await Promise.all([
-        api.rpc.chain.getBlockHash(startBlock),
-        api.rpc.chain.getBlockHash(endBlock),
+        auxApi.rpc.chain.getBlockHash(startBlock),
+        auxApi.rpc.chain.getBlockHash(endBlock),
       ])
       const [startBlockTime, endBlockTime] = await Promise.all([
-        api.query.timestamp.now.at(startBlockHash),
-        api.query.timestamp.now.at(endBlockHash),
+        auxApi.query.timestamp.now.at(startBlockHash),
+        auxApi.query.timestamp.now.at(endBlockHash),
       ])
-      provider.disconnect()
+
+      if (chain !== config.selectedEndpoint?.value) auxProvider.disconnect()
 
       const timePassed = endBlockTime.toNumber() - startBlockTime.toNumber()
       const avgBlockTime = timePassed / (endBlock - startBlock) / 1000

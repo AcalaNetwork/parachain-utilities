@@ -1,3 +1,5 @@
+import { HTMLProps, ReactNode } from 'react';
+
 export interface SubstrateAddress {
   name: string;
   key: string;

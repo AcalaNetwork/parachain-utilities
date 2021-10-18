@@ -12,9 +12,10 @@ import {
   Table,
 } from "antd"
 import { Moment } from "moment"
-import React, { useEffect, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import { useAppSelector } from "../../store/hooks"
 import { formatDate, toUnixTimestamp } from "../../utils/UtilsFunctions"
+import { ApiContext, ApiContextData } from "../utils/ApiProvider"
 import "./BlockTime.less"
 
 interface BlockTimeFormValues {
@@ -31,6 +32,7 @@ interface BlockTimeResult {
 }
 
 function BlockTime(): React.ReactElement {
+  const { api } = useContext<ApiContextData>(ApiContext)
   const [formBlocks] = Form.useForm()
   const config = useAppSelector(state => state.config)
   const [results, setResults] = useState<Array<BlockTimeResult>>([])
@@ -46,21 +48,9 @@ function BlockTime(): React.ReactElement {
   const loadExpectedBlockTime = async () => {
     try {
       setIsExpectedTimeLoading(true)
-      // Connect to chain
-      const provider = new WsProvider(config.selectedEndpoint?.value)
-
-      provider.on("error", () => {
-        provider.disconnect()
-        message.error("An error ocurred when trying to connect to the endpoint")
-        setIsExpectedTimeLoading(false)
-      })
-
-      // Create the API
-      const api = await ApiPromise.create({ provider })
 
       // Get default block time
       const timeMs = api.consts.babe.expectedBlockTime.toNumber()
-      provider.disconnect()
 
       if (!formBlocks.getFieldValue("expectedBlockTime")) {
         formBlocks.setFieldsValue({

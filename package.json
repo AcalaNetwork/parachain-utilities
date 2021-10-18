@@ -5,7 +5,7 @@
   "dependencies": {
     "@ant-design/icons": "^4.6.4",
     "@craco/craco": "^6.3.0",
-    "@polkadot/api": "^5.8.3",
+    "@polkadot/api": "^6.4.1",
     "@polkadot/apps-config": "^0.95.1",
     "@polkadot/util": "^7.3.1",
     "@testing-library/jest-dom": "^5.11.4",

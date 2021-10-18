@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useContext, useState } from "react"
 import {
   Button,
   Divider,
@@ -19,8 +19,10 @@ import {
 import { RPCEndpoint } from "../../types"
 import { CheckOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons"
 import AddEndpointModal from "./AddEndpointModal"
+import { ApiContext, ApiContextData } from "../utils/ApiProvider"
 
 function Configuration(): React.ReactElement {
+  const { connectToApi } = useContext<ApiContextData>(ApiContext)
   const dispatch = useAppDispatch()
   const [showAddEndpointModal, setShowAddEndpointModal] = useState(false)
   const config = useAppSelector(state => state.config)
@@ -52,6 +54,7 @@ function Configuration(): React.ReactElement {
 
   const handleSelectEndpoint = (endpoint: RPCEndpoint) => {
     dispatch(selectEndpoint(endpoint))
+    connectToApi(endpoint.value)
   }
 
   const handleDeleteEndpoint = (endpoint: RPCEndpoint) => {

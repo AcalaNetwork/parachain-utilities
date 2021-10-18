@@ -2,7 +2,7 @@ import React from "react"
 import { Col, Layout, Menu, Row, Space } from "antd"
 import { MenuOutlined } from '@ant-design/icons';
 import { Link } from "react-router-dom"
-import headerLogo from "../images/symbol-polkadot.svg"
+import headerLogo from "../../images/symbol-polkadot.svg"
 import "./Navbar.less"
 
 function NavbarComponent(): React.ReactElement {

@@ -12,9 +12,10 @@ import {
   Space,
   Table,
 } from "antd"
-import React, { useState } from "react"
+import React, { useContext, useState } from "react"
 import { useAppSelector } from "../../store/hooks"
 import { findAuthorName } from "../../utils/UtilsFunctions"
+import { ApiContext, ApiContextData } from "../utils/ApiProvider"
 import "./BlockAuthor.less"
 
 interface BlockAuthorFormValues {
@@ -35,6 +36,7 @@ interface BlockInfo {
 }
 
 function BlockAuthor(): React.ReactElement {
+  const { api } = useContext<ApiContextData>(ApiContext)
   const [formBlocks] = Form.useForm()
   const addresses = useAppSelector(state => state.address.list)
   const config = useAppSelector(state => state.config)
@@ -77,17 +79,28 @@ function BlockAuthor(): React.ReactElement {
       const { startBlock, endBlock, chain } = values
 
       setIsLoading(true)
-      // Connect to chain
-      const provider = new WsProvider(chain)
+      
+      let auxApi
+      let auxProvider = {} as WsProvider
 
-      provider.on("error", () => {
-        provider.disconnect()
-        message.error("An error ocurred when trying to connect to the endpoint")
-        setIsLoading(false)
-      })
+      // If the chain is the default one, use that connection
+      if (chain === config.selectedEndpoint?.value) {
+        auxApi = api
+      } else {
+        // Connect to chain
+        auxProvider = new WsProvider(chain)
 
-      // Create the API
-      const api = await ApiPromise.create({ provider })
+        auxProvider.on("error", () => {
+          auxProvider.disconnect()
+          message.error(
+            "An error ocurred when trying to connect to the endpoint"
+          )
+          setIsLoading(false)
+        })
+
+        // Create the API
+        auxApi = await ApiPromise.create({ provider: auxProvider })
+      }
 
       // Load hashes
       const groupedBlocks: Record<string, BlockInfo[]> = {}
@@ -100,13 +113,13 @@ function BlockAuthor(): React.ReactElement {
           promiseCount < allowedParallel &&
           loadedUntil + promiseCount <= endBlock
         ) {
-          promises.push(api.rpc.chain.getBlockHash(loadedUntil + promiseCount))
+          promises.push(auxApi.rpc.chain.getBlockHash(loadedUntil + promiseCount))
           promiseCount += 1
         }
         const newHashes = await Promise.all(promises)
         promises = []
         for (const hash of newHashes) {
-          promises.push(api.derive.chain.getHeader(hash))
+          promises.push(auxApi.derive.chain.getHeader(hash))
         }
         const newHeaders = await Promise.all(promises)
         newHeaders.forEach((header, index) => {
@@ -124,7 +137,7 @@ function BlockAuthor(): React.ReactElement {
         loadedUntil += newHashes.length
       }
 
-      provider.disconnect()
+      if (chain !== config.selectedEndpoint?.value) auxProvider.disconnect()
 
       const finalResults: BlockAuthorResult[] = []
 
