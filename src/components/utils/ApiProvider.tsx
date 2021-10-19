@@ -1,83 +1,84 @@
-import React, { FC, useCallback, useEffect, useRef, useState } from "react"
+import React, { FC, useCallback, useRef } from "react"
 
 import { ApiPromise, WsProvider } from "@polkadot/api"
+import { PolkadotNetwork } from "../../types"
 
 export interface ApiContextData {
-  api: ApiPromise
-  connected: boolean
-  error: boolean
-  loading: boolean
-  connectToApi: (endpoint?: string) => void
+  apiConnections: Record<string, ApiPromise>
+  apiStatus: Record<string, boolean>
+  deleteNetworkConnection: (networkName: string) => void
 }
 
-// ensure that api always exist
+// Ensure that ApiContext always exists
 export const ApiContext = React.createContext<ApiContextData>(
   {} as ApiContextData
 )
 
-/**
- * @name ApiProvider
- * @description context provider to connect to polkadot.js api
- */
+export const connectToApi = async (
+  apiConnections: Record<string, ApiPromise>,
+  apiStatus: Record<string, boolean>,
+  network: PolkadotNetwork
+): Promise<ApiPromise> => {
+  try {
+    if (apiStatus[network.networkName]) {
+      return apiConnections[network.networkName]
+    }
+
+    const provider = new WsProvider(
+      network.endpoints.map(endpoint => endpoint.value)
+    )
+
+    provider.on("disconnected", () => {
+      console.log(`Disconnected from provider of ${network.networkName}`)
+      apiStatus[network.networkName] = false
+    })
+    provider.on("error", () => {
+      console.log(`Error on provider of ${network.networkName}`)
+      apiStatus[network.networkName] = false
+    })
+
+    const api = await ApiPromise.create({
+      provider,
+    })
+
+    api.on("disconnected", () => {
+      console.log(`Disconnected from api of ${network.networkName}`)
+      apiStatus[network.networkName] = false
+    })
+    api.on("error", () => {
+      console.log(`Error on api of ${network.networkName}`)
+      apiStatus[network.networkName] = false
+    })
+
+    apiConnections[network.networkName] = api
+    apiStatus[network.networkName] = true
+    return api
+  } catch (error) {
+    apiStatus[network.networkName] = false
+    throw(error)
+  }
+}
+
 export const ApiProvider: FC = ({ children }) => {
-  const [connected, setConnected] = useState<boolean>(false)
-  const [error, setError] = useState<boolean>(false)
-  const [loading, setLoading] = useState<boolean>(true)
-  const providerInstance = useRef<WsProvider>({} as WsProvider)
-  const apiInstance = useRef<ApiPromise>({} as ApiPromise)
+  const apiConnections = useRef<Record<string, ApiPromise>>(
+    {} as Record<string, ApiPromise>
+  )
+  const apiStatus = useRef<Record<string, boolean>>(
+    {} as Record<string, boolean>
+  )
 
-  const connectToApi = useCallback(async (endpoint?: string) => {
-    if (!endpoint) return
-    try {
-      setLoading(true)
-      if (typeof providerInstance.current.disconnect === "function")
-        providerInstance.current.disconnect()
-      setConnected(false)
-
-      providerInstance.current = new WsProvider(endpoint)
-
-      const api = await ApiPromise.create({
-        provider: providerInstance.current,
-      })
-
-      apiInstance.current = api
-      setConnected(true)
-      setError(false)
-      setLoading(false)
-    } catch (error) {
-      console.log(error)
-      setConnected(false)
-      setError(true)
-      setLoading(false)
+  const deleteNetworkConnection = useCallback((networkName: string) => {
+    if (typeof apiConnections.current[networkName]?.disconnect === "function") {
+      apiConnections.current[networkName].disconnect()
     }
   }, [])
-
-  // subscribe connect status
-  useEffect(() => {
-    if (!connected) return
-
-    apiInstance.current.on("disconnected", () => {
-      setConnected(false)
-      setError(false)
-    })
-    apiInstance.current.on("error", () => {
-      setConnected(false)
-      setError(true)
-    })
-    apiInstance.current.on("connected", () => {
-      setConnected(true)
-      setError(false)
-    })
-  }, [apiInstance, connected, setConnected, setError])
 
   return (
     <ApiContext.Provider
       value={{
-        api: apiInstance.current,
-        connected,
-        error,
-        loading,
-        connectToApi,
+        apiConnections: apiConnections.current,
+        apiStatus: apiStatus.current,
+        deleteNetworkConnection,
       }}>
       {children}
     </ApiContext.Provider>

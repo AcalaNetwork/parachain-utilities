@@ -1,64 +1,67 @@
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { Button, Form, Input, Modal, Row, Space, message, Spin } from "antd"
-import React, { useContext, useEffect, useState } from "react"
-import { addEndpoint } from "../../store/actions/configActions"
+import React, { useEffect, useState } from "react"
+import { addNetwork } from "../../store/actions/configActions"
 import { useAppDispatch, useAppSelector } from "../../store/hooks"
-import { RPCEndpoint } from "../../types"
-import { ApiContext, ApiContextData } from "../utils/ApiProvider"
 
-type AddEndpointModalProps = {
+type AddNetworkModalProps = {
   showModal: boolean
   setShowModal: (value: boolean) => void
-  chosenNetwork: string
 }
 
-function AddEndpointModal(props: AddEndpointModalProps): React.ReactElement {
-  const { deleteNetworkConnection } = useContext<ApiContextData>(ApiContext)
+function AddNetworkModal(props: AddNetworkModalProps): React.ReactElement {
   const [form] = Form.useForm()
   const dispatch = useAppDispatch()
   const networks = useAppSelector(state => state.config.networks)
   const [isLoading, setIsLoading] = useState(false)
-  const { showModal, setShowModal, chosenNetwork } = props
-
+  const { showModal, setShowModal } = props
   useEffect(() => {
     form.resetFields()
   }, [showModal])
 
-  const onFormSubmit = async (rpcEndpoint: RPCEndpoint) => {
+  const onFormSubmit = async (formValues: Record<string, string>) => {
     try {
       setIsLoading(true)
-      const trimmedValue = rpcEndpoint.value.trim()
-      const checkExisting = networks
-        .find(auxNetwork => auxNetwork.networkName === chosenNetwork)
-        ?.endpoints.find(auxEndpoint => auxEndpoint.value === trimmedValue)
+      const trimmedValue = formValues.networkName.trim()
+      const checkExisting = networks.find(
+        auxNetwork => auxNetwork.networkName === trimmedValue
+      )
       if (checkExisting) {
         message.error(
-          `Endpoint ${checkExisting.value} already exists in network ${chosenNetwork}`
+          `Network with name ${checkExisting.networkName} already exists`
         )
         setIsLoading(false)
         return
       }
 
-      const provider = new WsProvider(trimmedValue)
+      const trimmedUrl = formValues.urlValue
+      const provider = new WsProvider(trimmedUrl)
       provider.on("error", () => {
         provider.disconnect()
         message.error("Error: Couldn't connect to endpoint")
         setIsLoading(false)
       })
-      await ApiPromise.create({ provider })      
+      await ApiPromise.create({ provider })
       // const chainName = (await api.rpc.system.chain()).toString()
       provider.disconnect()
+
       dispatch(
-        addEndpoint(chosenNetwork, {
-          value: trimmedValue,
+        addNetwork({
+          networkName: trimmedValue,
+          endpoints: [
+            {
+              value: trimmedUrl,
+              enabled: true,
+            },
+          ],
           enabled: true,
         })
       )
       setIsLoading(false)
-      deleteNetworkConnection(chosenNetwork)
       handleClose()
     } catch (err) {
-      message.error("Error: Invalid endpoint URL")
+      console.log(err)
+      message.error("Error: Couldn't connect to network/endpoint")
       setIsLoading(false)
     }
   }
@@ -70,24 +73,35 @@ function AddEndpointModal(props: AddEndpointModalProps): React.ReactElement {
 
   return (
     <Modal
-      className='add-endpoint-modal'
+      className='add-network-modal'
       visible={showModal}
-      title='Add RPC endpoint'
+      title='Add Network'
       okText='Add'
       onCancel={handleClose}
       footer={null}>
       <Spin spinning={isLoading}>
         <Form
           layout='vertical'
-          name='add-endpoint-form'
+          name='add-network-form'
           form={form}
           initialValues={{
-            value: "",
+            networkName: "",
           }}
           onFinish={onFormSubmit}>
           <Form.Item
-            label='URL'
-            name='value'
+            label='Network Name'
+            name='networkName'
+            rules={[
+              {
+                required: true,
+                message: "Please enter the network name",
+              },
+            ]}>
+            <Input placeholder='Enter network name...' />
+          </Form.Item>
+          <Form.Item
+            label='Endpoint URL'
+            name='urlValue'
             rules={[
               {
                 required: true,
@@ -118,4 +132,4 @@ function AddEndpointModal(props: AddEndpointModalProps): React.ReactElement {
   )
 }
 
-export default AddEndpointModal
+export default AddNetworkModal

@@ -15,7 +15,7 @@ const addressPersistConfig = {
 const configPersistConfig = {
   key: "config",
   storage: storage,
-  whitelist: ["endpoints", "utcTime", "selectedEndpoint"],
+  whitelist: ["networks", "utcTime", "selectedNetwork"],
   stateReconciler: hardSet,
 }
 

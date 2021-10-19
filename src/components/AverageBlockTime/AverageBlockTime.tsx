@@ -1,5 +1,4 @@
 import { BarChartOutlined } from "@ant-design/icons"
-import { ApiPromise, WsProvider } from "@polkadot/api"
 import {
   Button,
   Form,
@@ -12,7 +11,7 @@ import {
 } from "antd"
 import React, { useContext, useState } from "react"
 import { useAppSelector } from "../../store/hooks"
-import { ApiContext, ApiContextData } from "../utils/ApiProvider"
+import { ApiContext, ApiContextData, connectToApi } from "../utils/ApiProvider"
 import "./AverageBlockTime.less"
 
 interface AvgBlockTimeFormValues {
@@ -29,7 +28,7 @@ interface AvgBlockTimeResult {
 }
 
 function AverageBlockTime(): React.ReactElement {
-  const { api } = useContext<ApiContextData>(ApiContext)
+  const { apiConnections, apiStatus } = useContext<ApiContextData>(ApiContext)
   const [formBlocks] = Form.useForm()
   const config = useAppSelector(state => state.config)
   const [results, setResults] = useState<Array<AvgBlockTimeResult>>([])
@@ -71,27 +70,13 @@ function AverageBlockTime(): React.ReactElement {
 
       setIsLoading(true)
 
-      let auxApi
-      let auxProvider = {} as WsProvider
+      const auxNetwork = config.networks.find(
+        auxNetwork => auxNetwork.networkName === chain
+      )
 
-      // If the chain is the default one, use that connection
-      if (chain === config.selectedEndpoint?.value) {
-        auxApi = api
-      } else {
-        // Connect to chain
-        auxProvider = new WsProvider(chain)
+      if (!auxNetwork) return
 
-        auxProvider.on("error", () => {
-          auxProvider.disconnect()
-          message.error(
-            "An error ocurred when trying to connect to the endpoint"
-          )
-          setIsLoading(false)
-        })
-
-        // Create the API
-        auxApi = await ApiPromise.create({ provider: auxProvider })
-      }
+      const auxApi = await connectToApi(apiConnections, apiStatus, auxNetwork)
 
       // Query start block and end block time
       const [startBlockHash, endBlockHash] = await Promise.all([
@@ -102,8 +87,6 @@ function AverageBlockTime(): React.ReactElement {
         auxApi.query.timestamp.now.at(startBlockHash),
         auxApi.query.timestamp.now.at(endBlockHash),
       ])
-
-      if (chain !== config.selectedEndpoint?.value) auxProvider.disconnect()
 
       const timePassed = endBlockTime.toNumber() - startBlockTime.toNumber()
       const avgBlockTime = timePassed / (endBlock - startBlock) / 1000
@@ -159,7 +142,7 @@ function AverageBlockTime(): React.ReactElement {
         layout='horizontal'
         form={formBlocks}
         onValuesChange={checkBlockRange}
-        initialValues={{ chain: config.selectedEndpoint?.value }}
+        initialValues={{ chain: config.selectedNetwork?.networkName }}
         onFinish={handleOnCalculate}>
         <Row>
           <Space>
@@ -197,11 +180,11 @@ function AverageBlockTime(): React.ReactElement {
             },
           ]}>
           <Select placeholder='Select chain...'>
-            {config.endpoints
-              .filter(endpoint => endpoint.enabled)
-              .map((endpoint, index) => (
-                <Select.Option key={index} value={endpoint.value}>
-                  {endpoint.chainName} ({endpoint.value})
+            {config.networks
+              .filter(network => network.enabled)
+              .map((network, index) => (
+                <Select.Option key={index} value={network.networkName}>
+                  {network.networkName}
                 </Select.Option>
               ))}
           </Select>
@@ -219,7 +202,7 @@ function AverageBlockTime(): React.ReactElement {
         </Form.Item>
       </Form>
       <h2>Results:</h2>
-      <Table dataSource={results} columns={columns} />
+      <Table dataSource={results} columns={columns} rowKey='chain' />
     </div>
   )
 }

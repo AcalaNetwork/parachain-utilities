@@ -64,8 +64,11 @@ function ViewFormatsModal(props: ViewFormatsModalProps): React.ReactElement {
           </CopyToClipboard>
         </Space>
       </Row>
-      {/* <Row>Public Key{selectedAddress?.key}</Row> */}
-      <Table dataSource={selectedAddress?.transformed} columns={columns} />
+      <Table
+        dataSource={selectedAddress?.transformed}
+        columns={columns}
+        rowKey='prefix'
+      />
     </Modal>
   )
 }

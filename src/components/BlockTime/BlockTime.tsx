@@ -1,5 +1,5 @@
 import { BarChartOutlined } from "@ant-design/icons"
-import { ApiPromise, WsProvider } from "@polkadot/api"
+import { ApiPromise } from "@polkadot/api"
 import {
   Button,
   DatePicker,
@@ -14,8 +14,9 @@ import {
 import { Moment } from "moment"
 import React, { useContext, useEffect, useState } from "react"
 import { useAppSelector } from "../../store/hooks"
+import { PolkadotNetwork } from "../../types"
 import { formatDate, toUnixTimestamp } from "../../utils/UtilsFunctions"
-import { ApiContext, ApiContextData } from "../utils/ApiProvider"
+import { ApiContext, ApiContextData, connectToApi } from "../utils/ApiProvider"
 import "./BlockTime.less"
 
 interface BlockTimeFormValues {
@@ -26,13 +27,12 @@ interface BlockTimeFormValues {
 
 interface BlockTimeResult {
   chainName: string
-  endpoint: string
   estimateResult?: number | string
   type: string
 }
 
 function BlockTime(): React.ReactElement {
-  const { api } = useContext<ApiContextData>(ApiContext)
+  const { apiConnections, apiStatus } = useContext<ApiContextData>(ApiContext)
   const [formBlocks] = Form.useForm()
   const config = useAppSelector(state => state.config)
   const [results, setResults] = useState<Array<BlockTimeResult>>([])
@@ -50,7 +50,12 @@ function BlockTime(): React.ReactElement {
       setIsExpectedTimeLoading(true)
 
       // Get default block time
-      const timeMs = api.consts.babe.expectedBlockTime.toNumber()
+      const auxApi = await connectToApi(
+        apiConnections,
+        apiStatus,
+        config.selectedNetwork || ({} as PolkadotNetwork)
+      )
+      const timeMs = auxApi.consts.babe.expectedBlockTime.toNumber()
 
       if (!formBlocks.getFieldValue("expectedBlockTime")) {
         formBlocks.setFieldsValue({
@@ -131,25 +136,15 @@ function BlockTime(): React.ReactElement {
     setIsLoading(true)
     const auxResults: BlockTimeResult[] = []
 
-    const enabledEndpoints = config.endpoints.filter(
-      endpoint => endpoint.enabled
-    )
+    const enabledNetworks = config.networks.filter(network => network.enabled)
     let index = 0
-    while (index < enabledEndpoints.length) {
+    while (index < enabledNetworks.length) {
       try {
-        // Connect to chain
-        const provider = new WsProvider(enabledEndpoints[index].value)
-
-        provider.on("error", () => {
-          provider.disconnect()
-          message.error(
-            "An error ocurred when trying to connect to the endpoint"
-          )
-          setIsLoading(false)
-        })
-
-        // Create the API
-        const api = await ApiPromise.create({ provider })
+        const api = await connectToApi(
+          apiConnections,
+          apiStatus,
+          enabledNetworks[index]
+        )
 
         // Get current block number
         const latestBlock = await api.rpc.chain.getHeader()
@@ -178,12 +173,9 @@ function BlockTime(): React.ReactElement {
           type = "Past"
         }
 
-        provider.disconnect()
-
         // Add estimate to results
         auxResults.push({
-          chainName: enabledEndpoints[index].chainName,
-          endpoint: enabledEndpoints[index].value,
+          chainName: enabledNetworks[index].networkName,
           estimateResult: formattedResult,
           type,
         })
@@ -205,25 +197,15 @@ function BlockTime(): React.ReactElement {
     setIsLoading(true)
     const inputTimestamp = toUnixTimestamp(datetime, config.utcTime)
 
-    const enabledEndpoints = config.endpoints.filter(
-      endpoint => endpoint.enabled
-    )
+    const enabledNetworks = config.networks.filter(network => network.enabled)
     let index = 0
-    while (index < enabledEndpoints.length) {
+    while (index < enabledNetworks.length) {
       try {
-        // Connect to chain
-        const provider = new WsProvider(enabledEndpoints[index].value)
-
-        provider.on("error", () => {
-          provider.disconnect()
-          message.error(
-            "An error ocurred when trying to connect to the endpoint"
-          )
-          setIsLoading(false)
-        })
-
-        // Create the API
-        const api = await ApiPromise.create({ provider })
+        const api = await connectToApi(
+          apiConnections,
+          apiStatus,
+          enabledNetworks[index]
+        )
 
         // Get current block number
         const latestBlock = await api.rpc.chain.getHeader()
@@ -255,15 +237,12 @@ function BlockTime(): React.ReactElement {
           type = "Past"
         }
 
-        provider.disconnect()
-
         // Add estimate to results
         setResults(oldResults => {
           return [
             ...oldResults,
             {
-              chainName: enabledEndpoints[index].chainName,
-              endpoint: enabledEndpoints[index].value,
+              chainName: enabledNetworks[index].networkName,
               estimateResult: result,
               type,
             },
@@ -330,11 +309,7 @@ function BlockTime(): React.ReactElement {
   }
 
   const renderChain = (row: BlockTimeResult) => {
-    return (
-      <div>
-        {row.chainName} ({row.endpoint})
-      </div>
-    )
+    return <div>{row.chainName}</div>
   }
 
   const renderResult = (row: BlockTimeResult) => {
@@ -366,7 +341,7 @@ function BlockTime(): React.ReactElement {
         layout='horizontal'
         form={formBlocks}
         onValuesChange={checkOptionalFields}
-        initialValues={{ chain: config.selectedEndpoint?.value }}
+        initialValues={{ chain: config.selectedNetwork?.networkName }}
         onFinish={handleOnCalculate}>
         <Row>
           <Space>
@@ -414,7 +389,7 @@ function BlockTime(): React.ReactElement {
         </Form.Item>
       </Form>
       <h2>Result:</h2>
-      <Table dataSource={results} columns={columns} />
+      <Table dataSource={results} columns={columns} rowKey='chainName' />
     </div>
   )
 }

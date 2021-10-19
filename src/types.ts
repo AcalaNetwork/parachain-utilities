@@ -11,17 +11,22 @@ export interface TransformedSubstrateAddress {
   value: string;
 }
 
-export interface RPCEndpoint {
-  value: string;
-  chainName: string;
-  hostedBy?: string;
+export interface PolkadotNetwork {
+  networkName: string;
+  endpoints: RPCEndpoint[]
   enabled: boolean;
   prefix?: number;
 }
 
+export interface RPCEndpoint {
+  value: string;
+  hostedBy?: string;
+  enabled: boolean;
+}
+
 export interface ConfigState {
-  endpoints: RPCEndpoint[],
-  selectedEndpoint?: RPCEndpoint
+  networks: PolkadotNetwork[],
+  selectedNetwork?: PolkadotNetwork
   utcTime: boolean,
 }
 

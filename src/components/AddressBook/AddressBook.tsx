@@ -1,4 +1,8 @@
-import { DeleteOutlined, DotChartOutlined, PlusOutlined } from "@ant-design/icons"
+import {
+  DeleteOutlined,
+  DotChartOutlined,
+  PlusOutlined,
+} from "@ant-design/icons"
 import { Button, Row, Space, Table } from "antd"
 import React, { useState } from "react"
 import { deleteAddress } from "../../store/actions/addressActions"
@@ -80,7 +84,7 @@ function AddressBook(): React.ReactElement {
           Add address
         </Button>
       </Row>
-      <Table dataSource={addresses} columns={columns} />
+      <Table dataSource={addresses} columns={columns} rowKey='key' />
       <AddAddressModal
         showModal={showAddAddressModal}
         setShowModal={setShowAddAddressModal}

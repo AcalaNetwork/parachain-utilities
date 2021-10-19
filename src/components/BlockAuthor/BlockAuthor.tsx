@@ -1,5 +1,4 @@
 import { BarChartOutlined, CaretRightOutlined } from "@ant-design/icons"
-import { ApiPromise, WsProvider } from "@polkadot/api"
 import {
   Button,
   Collapse,
@@ -15,7 +14,7 @@ import {
 import React, { useContext, useState } from "react"
 import { useAppSelector } from "../../store/hooks"
 import { findAuthorName } from "../../utils/UtilsFunctions"
-import { ApiContext, ApiContextData } from "../utils/ApiProvider"
+import { ApiContext, ApiContextData, connectToApi } from "../utils/ApiProvider"
 import "./BlockAuthor.less"
 
 interface BlockAuthorFormValues {
@@ -36,7 +35,7 @@ interface BlockInfo {
 }
 
 function BlockAuthor(): React.ReactElement {
-  const { api } = useContext<ApiContextData>(ApiContext)
+  const { apiConnections, apiStatus } = useContext<ApiContextData>(ApiContext)
   const [formBlocks] = Form.useForm()
   const addresses = useAppSelector(state => state.address.list)
   const config = useAppSelector(state => state.config)
@@ -79,28 +78,14 @@ function BlockAuthor(): React.ReactElement {
       const { startBlock, endBlock, chain } = values
 
       setIsLoading(true)
-      
-      let auxApi
-      let auxProvider = {} as WsProvider
 
-      // If the chain is the default one, use that connection
-      if (chain === config.selectedEndpoint?.value) {
-        auxApi = api
-      } else {
-        // Connect to chain
-        auxProvider = new WsProvider(chain)
+      const auxNetwork = config.networks.find(
+        auxNetwork => auxNetwork.networkName === chain
+      )
 
-        auxProvider.on("error", () => {
-          auxProvider.disconnect()
-          message.error(
-            "An error ocurred when trying to connect to the endpoint"
-          )
-          setIsLoading(false)
-        })
+      if (!auxNetwork) return
 
-        // Create the API
-        auxApi = await ApiPromise.create({ provider: auxProvider })
-      }
+      const auxApi = await connectToApi(apiConnections, apiStatus, auxNetwork)
 
       // Load hashes
       const groupedBlocks: Record<string, BlockInfo[]> = {}
@@ -113,7 +98,9 @@ function BlockAuthor(): React.ReactElement {
           promiseCount < allowedParallel &&
           loadedUntil + promiseCount <= endBlock
         ) {
-          promises.push(auxApi.rpc.chain.getBlockHash(loadedUntil + promiseCount))
+          promises.push(
+            auxApi.rpc.chain.getBlockHash(loadedUntil + promiseCount)
+          )
           promiseCount += 1
         }
         const newHashes = await Promise.all(promises)
@@ -136,8 +123,6 @@ function BlockAuthor(): React.ReactElement {
         })
         loadedUntil += newHashes.length
       }
-
-      if (chain !== config.selectedEndpoint?.value) auxProvider.disconnect()
 
       const finalResults: BlockAuthorResult[] = []
 
@@ -214,7 +199,7 @@ function BlockAuthor(): React.ReactElement {
         layout='horizontal'
         form={formBlocks}
         onValuesChange={checkBlockRange}
-        initialValues={{ chain: config.selectedEndpoint?.value }}
+        initialValues={{ chain: config.selectedNetwork?.networkName }}
         onFinish={handleOnCalculate}>
         <Row>
           <Space>
@@ -252,11 +237,11 @@ function BlockAuthor(): React.ReactElement {
             },
           ]}>
           <Select placeholder='Select chain...'>
-            {config.endpoints
-              .filter(endpoint => endpoint.enabled)
-              .map((endpoint, index) => (
-                <Select.Option key={index} value={endpoint.value}>
-                  {endpoint.chainName} ({endpoint.value})
+            {config.networks
+              .filter(network => network.enabled)
+              .map((network, index) => (
+                <Select.Option key={index} value={network.networkName}>
+                  {network.networkName}
                 </Select.Option>
               ))}
           </Select>
@@ -274,7 +259,7 @@ function BlockAuthor(): React.ReactElement {
         </Form.Item>
       </Form>
       <h2>Results:</h2>
-      <Table dataSource={results} columns={columns} />
+      <Table dataSource={results} columns={columns} rowKey='authorAddress' />
     </div>
   )
 }
