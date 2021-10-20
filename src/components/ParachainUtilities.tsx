@@ -55,7 +55,7 @@ function ParachainUtilities(): React.ReactElement {
                   {
                     value: auxEndpoint.value,
                     hostedBy: auxEndpoint.textBy,
-                    enabled: false,
+                    enabled: true,
                   },
                 ],
                 enabled: false,

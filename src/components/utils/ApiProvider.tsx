@@ -24,8 +24,11 @@ export const connectToApi = async (
       return apiConnections[network.networkName]
     }
 
+    const listOfEndpoints = network.endpoints.filter(endpoint => endpoint.enabled)
+    if (listOfEndpoints.length === 0) listOfEndpoints.push(network.endpoints[0])
+
     const provider = new WsProvider(
-      network.endpoints.map(endpoint => endpoint.value)
+      listOfEndpoints.map(endpoint => endpoint.value)
     )
 
     provider.on("disconnected", () => {
@@ -55,7 +58,7 @@ export const connectToApi = async (
     return api
   } catch (error) {
     apiStatus[network.networkName] = false
-    throw(error)
+    throw error
   }
 }
 
