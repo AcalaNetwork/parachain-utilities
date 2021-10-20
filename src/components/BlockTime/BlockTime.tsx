@@ -251,6 +251,7 @@ function BlockTime(): React.ReactElement {
 
         index += 1
       } catch (err) {
+        message.error("An error happened when estimating block times/numbers")
         console.log(err)
         index += 1
       }
@@ -265,47 +266,86 @@ function BlockTime(): React.ReactElement {
     currentBlockNumber: number,
     expectedBlockTime: number
   ): Promise<number> => {
-    // If times match, return
+    // If times match, return directly
     if (targetTime === currentTime) {
       return currentBlockNumber
     }
 
-    // Try to estimate target block number, minimum value is 1
-    let searchBlockNumber = Math.max(
-      1,
-      currentBlockNumber -
-        Math.ceil((currentTime - targetTime) / expectedBlockTime)
-    )
+    // Get timestamp at first block (block 1)
+    const firstBlockHash = await api.rpc.chain.getBlockHash(1)
+    const firstBlockTime = (
+      await api.query.timestamp.now.at(firstBlockHash)
+    ).toNumber()
 
-    let searchHash = await api.rpc.chain.getBlockHash(searchBlockNumber)
-    let searchTime = (await api.query.timestamp.now.at(searchHash)).toNumber()
-
-    // If estimated search time matches target, return value
-    if (searchTime === targetTime) {
-      return searchBlockNumber
+    // Handle special cases
+    if (targetTime <= firstBlockTime) {
+      return 1
+    } else if (currentBlockNumber === 2) {
+      return currentBlockNumber
     }
 
-    // Navigate until finding the block
-    const directionIncreasing = searchTime < targetTime
-    while (searchBlockNumber > 0 && searchBlockNumber < currentBlockNumber) {
-      // Navigate 1 block
-      const newBlockNumber = searchBlockNumber + (directionIncreasing ? 1 : -1)
+    let leftBlockNumber = 1
+    let leftBlockTime = firstBlockTime
+    let rightBlockNumber = currentBlockNumber
+    let rightBlockTime = currentTime
+    let directionLeftToRight = false
 
-      // Load new block time
-      const newHash = await api.rpc.chain.getBlockHash(newBlockNumber)
-      const newTime = (await api.query.timestamp.now.at(newHash)).toNumber()
+    while (leftBlockNumber < rightBlockNumber) {
+      // Try to estimate target block number, depending on direction, we set the search block
+      // from the left or from the right. Minimum searchBlocNumber difference from left or right is 1
+      let searchBlockNumber
+      if (directionLeftToRight) {
+        searchBlockNumber = Math.min(
+          rightBlockNumber - 1,
+          leftBlockNumber +
+            Math.max(
+              1,
+              Math.round((targetTime - leftBlockTime) / expectedBlockTime)
+            )
+        )
+      } else {
+        searchBlockNumber = Math.max(
+          leftBlockNumber + 1,
+          rightBlockNumber -
+            Math.max(
+              1,
+              Math.round((rightBlockTime - targetTime) / expectedBlockTime)
+            )
+        )
+      }
+      // Load search block time
+      const searchBlockHash = await api.rpc.chain.getBlockHash(
+        searchBlockNumber
+      )
+      const searchBlockTime = (
+        await api.query.timestamp.now.at(searchBlockHash)
+      ).toNumber()
 
       // If we found the block, return the value
-      if (directionIncreasing && newTime >= targetTime) return newBlockNumber
-      if (!directionIncreasing && newTime < targetTime) return searchBlockNumber
+      if (searchBlockTime === targetTime) return searchBlockNumber
 
-      // If we didn't find it, update search and continue
-      searchBlockNumber = newBlockNumber
-      searchHash = newHash
-      searchTime = newTime
+      // Assign new left/right block
+      if (targetTime < searchBlockTime) {
+        rightBlockNumber = searchBlockNumber
+        rightBlockTime = searchBlockTime
+        directionLeftToRight = false
+      } else {
+        leftBlockNumber = searchBlockNumber
+        leftBlockTime = searchBlockTime
+        directionLeftToRight = true
+      }
+
+      // If both left and right block are next to each other, verify if target time is in-between
+      if (Math.abs(rightBlockNumber - leftBlockNumber) === 1) {
+        if (leftBlockTime < targetTime && targetTime < rightBlockTime) {
+          return rightBlockNumber
+        } else {
+          break
+        }
+      }
     }
 
-    return 1
+    throw Error("Error estimating the block number")
   }
 
   const renderChain = (row: BlockTimeResult) => {
