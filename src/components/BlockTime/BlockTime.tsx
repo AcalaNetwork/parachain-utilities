@@ -295,23 +295,27 @@ function BlockTime(): React.ReactElement {
       // from the left or from the right. Minimum searchBlocNumber difference from left or right is 1
       let searchBlockNumber
       if (directionLeftToRight) {
-        searchBlockNumber = Math.min(
-          rightBlockNumber - 1,
-          leftBlockNumber +
-            Math.max(
-              1,
-              Math.round((targetTime - leftBlockTime) / expectedBlockTime)
-            )
+        // Estimate using expectedBlockTime
+        searchBlockNumber = leftBlockNumber +
+        Math.max(
+          1,
+          Math.round((targetTime - leftBlockTime) / expectedBlockTime)
         )
+        // If estimation goes too high, search block in the middle instead
+        if ( searchBlockNumber > rightBlockNumber - 1) {
+          searchBlockNumber = Math.ceil(leftBlockNumber + rightBlockNumber / 2)
+        }
       } else {
-        searchBlockNumber = Math.max(
-          leftBlockNumber + 1,
-          rightBlockNumber -
-            Math.max(
-              1,
-              Math.round((rightBlockTime - targetTime) / expectedBlockTime)
-            )
+        // Estimate using expectedBlockTime
+        searchBlockNumber = rightBlockNumber -
+        Math.max(
+          1,
+          Math.round((rightBlockTime - targetTime) / expectedBlockTime)
         )
+        // If estimation goes too low, search block in the middle instead
+        if ( searchBlockNumber < leftBlockNumber + 1) {
+          searchBlockNumber = Math.floor(leftBlockNumber + rightBlockNumber / 2)
+        }
       }
       // Load search block time
       const searchBlockHash = await api.rpc.chain.getBlockHash(
