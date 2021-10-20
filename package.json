@@ -2,6 +2,15 @@
   "name": "parachain-utilities",
   "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
+    "eject": "react-scripts eject",
+    "eslint": "eslint {public,src}/**/*.{js,jsx,ts,tsx}",
+    "prettier": "prettier --check {public,src}/**/*.{js,jsx,ts,tsx,htm,html,json,xml,yml,css,scss,sass,less,webmanifest,svg}",
+    "prettier:fix": "prettier --write {public,src}/**/*.{js,jsx,ts,tsx,htm,html,json,xml,yml,css,scss,sass,less,webmanifest,svg}"
+  },
   "dependencies": {
     "@ant-design/icons": "^4.6.4",
     "@craco/craco": "^6.3.0",
@@ -31,14 +40,19 @@
     "web-vitals": "^1.0.1",
     "webfontloader": "^1.6.28"
   },
-  "scripts": {
-    "start": "craco start",
-    "build": "craco build",
-    "test": "craco test",
-    "eject": "react-scripts eject",
-    "eslint": "eslint {public,src}/**/*.{js,jsx,ts,tsx}",
-    "prettier": "prettier --check {public,src}/**/*.{js,jsx,ts,tsx,htm,html,json,xml,yml,css,scss,sass,less,webmanifest,svg}",
-    "prettier:fix": "prettier --write {public,src}/**/*.{js,jsx,ts,tsx,htm,html,json,xml,yml,css,scss,sass,less,webmanifest,svg}"
+  "devDependencies": {
+    "@types/react-copy-to-clipboard": "^5.0.1",
+    "@types/react-router-dom": "^5.1.8",
+    "@types/webfontloader": "^1.6.33",
+    "@typescript-eslint/eslint-plugin": "^4.31.0",
+    "@typescript-eslint/parser": "^4.31.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-react": "^7.25.1",
+    "prettier": "^2.4.0"
+  },
+  "resolutions": {
+    "@acala-network/type-definitions": "^3.0.2-3"
   },
   "eslintConfig": {
     "extends": [
@@ -57,16 +71,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@types/react-copy-to-clipboard": "^5.0.1",
-    "@types/react-router-dom": "^5.1.8",
-    "@types/webfontloader": "^1.6.33",
-    "@typescript-eslint/eslint-plugin": "^4.31.0",
-    "@typescript-eslint/parser": "^4.31.0",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-react": "^7.25.1",
-    "prettier": "^2.4.0"
   }
 }
