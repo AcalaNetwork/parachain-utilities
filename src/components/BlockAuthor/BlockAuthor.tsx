@@ -16,7 +16,7 @@ import {
 import React, { useContext, useEffect, useState } from "react"
 import { useAppSelector } from "../../store/hooks"
 import { PolkadotNetwork } from "../../types"
-import { estimateStartBlockNumber, findAuthorName } from "../../utils/UtilsFunctions"
+import { estimateStartBlockNumber, findAuthorName, getExpectedBlockTime } from "../../utils/UtilsFunctions"
 import { ApiContext, ApiContextData, connectToApi } from "../utils/ApiProvider"
 import "./BlockAuthor.less"
 
@@ -68,7 +68,7 @@ function BlockAuthor(): React.ReactElement {
         network || ({} as PolkadotNetwork)
       )
 
-      const timeMs = auxApi.consts?.babe?.expectedBlockTime.toNumber() || 0
+      const timeMs = getExpectedBlockTime(auxApi)
 
       // Get current block number
       const latestBlock = await auxApi.rpc.chain.getHeader()

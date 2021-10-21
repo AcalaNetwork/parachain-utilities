@@ -17,6 +17,7 @@ import { PolkadotNetwork } from "../../types"
 import {
   estimateStartBlockNumber,
   formatDate,
+  getExpectedBlockTime,
 } from "../../utils/UtilsFunctions"
 import { ApiContext, ApiContextData, connectToApi } from "../utils/ApiProvider"
 import "./AverageBlockTime.less"
@@ -66,7 +67,7 @@ function AverageBlockTime(): React.ReactElement {
         network || ({} as PolkadotNetwork)
       )
 
-      const timeMs = auxApi.consts?.babe?.expectedBlockTime.toNumber() || 0
+      const timeMs = getExpectedBlockTime(auxApi)
 
       // Get current block number
       const latestBlock = await auxApi.rpc.chain.getHeader()

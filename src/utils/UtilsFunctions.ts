@@ -1,7 +1,13 @@
 import moment, { Moment } from "moment"
 import { encodeAddress } from "@polkadot/util-crypto/address"
+import {
+  BN,
+  BN_THOUSAND,
+  BN_TWO,
+} from "@polkadot/util"
 import { SubstrateAddress, TransformedSubstrateAddress } from "../types"
 import * as prefixes from "../utils/ss58-registry.json"
+import { ApiPromise } from "@polkadot/api"
 
 export const replaceText = (
   key: string,
@@ -102,5 +108,30 @@ export const estimateStartBlockNumber = (
   return Math.max(
     1,
     endBlockNumber - (currentUnix - estimatedUnix) / estimatedBlockTime
+  )
+}
+
+const EXPECTED_TIME_THRESHOLD = BN_THOUSAND.div(BN_TWO)
+
+const EXPECTED_TIME_DEFAULT = new BN(6_000)
+
+export const getExpectedBlockTime = (api: ApiPromise): number => {
+  // https://github.com/polkadot-js/apps/blob/8ef4ed18dd281adfef3ce9e8f0bede8a82e62ec9/packages/react-hooks/src/useBlockTime.ts#L26
+  return (
+    // Babe
+    (
+      api.consts.babe?.expectedBlockTime ||
+      // POW, eg. Kulupu
+      api.consts.difficulty?.targetBlockTime ||
+      // Check against threshold to determine value validity
+      (api.consts.timestamp?.minimumPeriod.gte(EXPECTED_TIME_THRESHOLD)
+        ? // Default minimum period config
+          api.consts.timestamp.minimumPeriod.mul(BN_TWO)
+        : api.query.parachainSystem
+        ? // default guess for a parachain
+          EXPECTED_TIME_DEFAULT.mul(BN_TWO)
+        : // default guess for others
+          EXPECTED_TIME_DEFAULT)
+    ).toNumber()
   )
 }

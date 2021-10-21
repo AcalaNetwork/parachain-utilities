@@ -15,7 +15,7 @@ import {
 import { Moment } from "moment"
 import React, { useContext, useEffect, useState } from "react"
 import { useAppSelector } from "../../store/hooks"
-import { formatDate, toUnixTimestamp } from "../../utils/UtilsFunctions"
+import { formatDate, getExpectedBlockTime, toUnixTimestamp } from "../../utils/UtilsFunctions"
 import { ApiContext, ApiContextData, connectToApi } from "../utils/ApiProvider"
 import "./BlockTime.less"
 
@@ -61,7 +61,7 @@ function BlockTime(): React.ReactElement {
       )
 
       const newDefaults = apis.map(auxApi =>
-        auxApi.consts?.babe?.expectedBlockTime.toNumber()
+        getExpectedBlockTime(auxApi)
       )
 
       formBlocks.setFieldsValue({
