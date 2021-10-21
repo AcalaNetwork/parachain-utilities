@@ -1,6 +1,7 @@
 import { BarChartOutlined, CaretRightOutlined } from "@ant-design/icons"
 import {
   Button,
+  Col,
   Collapse,
   Form,
   InputNumber,
@@ -9,11 +10,13 @@ import {
   Row,
   Select,
   Space,
+  Spin,
   Table,
 } from "antd"
-import React, { useContext, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import { useAppSelector } from "../../store/hooks"
-import { findAuthorName } from "../../utils/UtilsFunctions"
+import { PolkadotNetwork } from "../../types"
+import { estimateStartBlockNumber, findAuthorName } from "../../utils/UtilsFunctions"
 import { ApiContext, ApiContextData, connectToApi } from "../utils/ApiProvider"
 import "./BlockAuthor.less"
 
@@ -40,8 +43,66 @@ function BlockAuthor(): React.ReactElement {
   const addresses = useAppSelector(state => state.address.list)
   const config = useAppSelector(state => state.config)
   const [results, setResults] = useState<Array<BlockAuthorResult>>([])
+  const [isDefaultLoading, setIsDefaultLoading] = useState(false)
+  const [defaultBlockTime, setDefaultBlockTime] = useState<number | undefined>()
   const [isBlockRangeValid, setIsBlockRangeValid] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    loadDefaults()
+  }, [])
+
+  const loadDefaults = async (overwriteValues = false) => {
+    try {
+      setIsDefaultLoading(true)
+      const selectedChain = formBlocks.getFieldValue("chain")
+
+      const network = config.networks.find(
+        auxNetwork => auxNetwork.networkName === selectedChain
+      )
+
+      // Get default block time
+      const auxApi = await connectToApi(
+        apiConnections,
+        apiStatus,
+        network || ({} as PolkadotNetwork)
+      )
+
+      const timeMs = auxApi.consts?.babe?.expectedBlockTime.toNumber() || 0
+
+      // Get current block number
+      const latestBlock = await auxApi.rpc.chain.getHeader()
+      const currentBlockNumber = latestBlock.number.toNumber()
+
+      if (
+        timeMs &&
+        (overwriteValues || !formBlocks.getFieldValue("expectedBlockTime"))
+      ) {
+        formBlocks.setFieldsValue({
+          expectedBlockTime: timeMs,
+        })
+      }
+
+      if (
+        currentBlockNumber &&
+        (overwriteValues || !formBlocks.getFieldValue("endBlock"))
+      ) {
+        formBlocks.setFieldsValue({
+          endBlock: currentBlockNumber,
+        })
+      }
+      setDefaultBlockTime(timeMs)
+      setIsDefaultLoading(false)
+    } catch (err) {
+      console.log(err)
+      message.error("An error ocurred when trying to load end block.")
+      setIsDefaultLoading(false)
+    }
+  }
+
+  const handleNetworkChange = () => {
+    loadDefaults(true)
+  }
 
   const checkBlockRange = (
     changedValues: Record<string, unknown>,
@@ -73,6 +134,37 @@ function BlockAuthor(): React.ReactElement {
     countBlockAuthors(values)
   }
 
+  const fillStartBlock = (hours = 0, days = 0, weeks = 0, months = 0) => {
+    const endBlock = formBlocks.getFieldValue("endBlock")
+    const expectedBlockTime = formBlocks.getFieldValue("expectedBlockTime")
+
+    if (!endBlock || !expectedBlockTime) {
+      message.error("Please set End block and Expected block time")
+      return
+    }
+
+    formBlocks.setFieldsValue({
+      startBlock: estimateStartBlockNumber(
+        endBlock,
+        expectedBlockTime,
+        hours,
+        days,
+        weeks,
+        months
+      ),
+    })
+
+    setIsBlockRangeValid(true)
+    formBlocks.validateFields()
+  }
+
+  const resetBlockTime = () => {
+    const newDefaultBlockTime = defaultBlockTime || 6000
+    formBlocks.setFieldsValue({
+      expectedBlockTime: newDefaultBlockTime,
+    })
+  }
+
   const countBlockAuthors = async (values: BlockAuthorFormValues) => {
     try {
       const { startBlock, endBlock, chain } = values
@@ -92,7 +184,7 @@ function BlockAuthor(): React.ReactElement {
       let loadedUntil = startBlock
       while (loadedUntil <= endBlock) {
         let promiseCount = 0
-        const allowedParallel = 5
+        const allowedParallel = 10
         let promises = []
         while (
           promiseCount < allowedParallel &&
@@ -196,13 +288,13 @@ function BlockAuthor(): React.ReactElement {
     <div className='block-author-container'>
       <Form
         className='mb-4'
-        layout='horizontal'
+        layout='vertical'
         form={formBlocks}
         onValuesChange={checkBlockRange}
         initialValues={{ chain: config.selectedNetwork?.networkName }}
         onFinish={handleOnCalculate}>
-        <Row>
-          <Space>
+        <Row gutter={30}>
+          <Col className='col-form-item'>
             <Form.Item
               name='startBlock'
               label='Start block'
@@ -214,6 +306,44 @@ function BlockAuthor(): React.ReactElement {
               ]}>
               <InputNumber min={1} />
             </Form.Item>
+          </Col>
+          <Col>
+            <Space className='additional-data-container'>
+              <Button
+                className='fill-start-block-btn'
+                onClick={() => fillStartBlock(1)}
+                disabled={isDefaultLoading}>
+                Last hour
+              </Button>
+              <Button
+                className='fill-start-block-btn'
+                onClick={() => fillStartBlock(0, 1)}
+                disabled={isDefaultLoading}>
+                Last day
+              </Button>
+              <Button
+                className='fill-start-block-btn'
+                onClick={() => fillStartBlock(0, 3)}
+                disabled={isDefaultLoading}>
+                Last 3 days
+              </Button>
+              <Button
+                className='fill-start-block-btn'
+                onClick={() => fillStartBlock(0, 0, 1)}
+                disabled={isDefaultLoading}>
+                Last week
+              </Button>
+              <Button
+                className='fill-start-block-btn'
+                onClick={() => fillStartBlock(0, 0, 0, 1)}
+                disabled={isDefaultLoading}>
+                Last month
+              </Button>
+            </Space>
+          </Col>
+        </Row>
+        <Row gutter={30}>
+          <Col className='col-form-item'>
             <Form.Item
               name='endBlock'
               label='End block'
@@ -225,7 +355,40 @@ function BlockAuthor(): React.ReactElement {
               ]}>
               <InputNumber min={1} />
             </Form.Item>
-          </Space>
+          </Col>
+          <Col className='col-form-item'>
+            <Form.Item
+              name='expectedBlockTime'
+              label='Expected block time (ms)'>
+              <InputNumber min={1} />
+            </Form.Item>
+          </Col>
+          <Col className='pl-0'>
+            <div className='additional-data-container'>
+              {isDefaultLoading && (
+                <div className='ml-2 mt-2'>
+                  <Spin />
+                </div>
+              )}
+              {defaultBlockTime !== undefined && (
+                <div className='ml-2 mt-2 default-block-time'>
+                  {defaultBlockTime === 0
+                    ? "No default value"
+                    : `Default value: ${defaultBlockTime} ms`}
+                </div>
+              )}
+            </div>
+          </Col>
+          <Col>
+            <div className='additional-data-container'>
+              <Button
+                className='reset-block-time-btn'
+                onClick={resetBlockTime}
+                disabled={isDefaultLoading || defaultBlockTime === undefined}>
+                Reset block time
+              </Button>
+            </div>
+          </Col>
         </Row>
         <Form.Item
           name='chain'
@@ -236,7 +399,7 @@ function BlockAuthor(): React.ReactElement {
               message: "Field Required",
             },
           ]}>
-          <Select placeholder='Select chain...'>
+          <Select onChange={handleNetworkChange} placeholder='Select chain...'>
             {config.networks
               .filter(network => network.enabled)
               .map((network, index) => (
@@ -251,7 +414,7 @@ function BlockAuthor(): React.ReactElement {
             className='calculate-btn'
             type='primary'
             icon={<BarChartOutlined />}
-            disabled={!isBlockRangeValid || isLoading}
+            disabled={!isBlockRangeValid || isLoading || isDefaultLoading}
             loading={isLoading}
             htmlType='submit'>
             Load Block Authors

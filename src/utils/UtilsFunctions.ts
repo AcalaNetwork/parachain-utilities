@@ -82,3 +82,25 @@ export const findAuthorName = (
   }
   return undefined
 }
+
+export const estimateStartBlockNumber = (
+  endBlockNumber: number,
+  estimatedBlockTime: number,
+  hours = 0,
+  days = 0,
+  weeks = 0,
+  months = 0
+): number => {
+  const auxMoment = moment()
+  const currentUnix = auxMoment.valueOf()
+  hours && auxMoment.subtract(hours, "hours")
+  days && auxMoment.subtract(days, "days")
+  weeks && auxMoment.subtract(weeks, "weeks")
+  months && auxMoment.subtract(months, "months")
+  const estimatedUnix = auxMoment.valueOf()
+
+  return Math.max(
+    1,
+    endBlockNumber - (currentUnix - estimatedUnix) / estimatedBlockTime
+  )
+}

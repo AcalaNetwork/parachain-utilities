@@ -56,7 +56,7 @@ function BlockTime(): React.ReactElement {
         config.selectedNetwork || ({} as PolkadotNetwork)
       )
 
-      const timeMs = auxApi.consts?.babe?.expectedBlockTime.toNumber()
+      const timeMs = auxApi.consts?.babe?.expectedBlockTime.toNumber() || 0
 
       if (timeMs && !formBlocks.getFieldValue("expectedBlockTime")) {
         formBlocks.setFieldsValue({
@@ -297,25 +297,31 @@ function BlockTime(): React.ReactElement {
       let searchBlockNumber
       if (directionLeftToRight) {
         // Estimate using expectedBlockTime
-        searchBlockNumber = leftBlockNumber +
-        Math.max(
-          1,
-          Math.round((targetTime - leftBlockTime) / expectedBlockTime)
-        )
+        searchBlockNumber =
+          leftBlockNumber +
+          Math.max(
+            1,
+            Math.round((targetTime - leftBlockTime) / expectedBlockTime)
+          )
         // If estimation goes too high, search block in the middle instead
-        if ( searchBlockNumber > rightBlockNumber - 1) {
-          searchBlockNumber = Math.ceil((leftBlockNumber + rightBlockNumber) / 2)
+        if (searchBlockNumber > rightBlockNumber - 1) {
+          searchBlockNumber = Math.ceil(
+            (leftBlockNumber + rightBlockNumber) / 2
+          )
         }
       } else {
         // Estimate using expectedBlockTime
-        searchBlockNumber = rightBlockNumber -
-        Math.max(
-          1,
-          Math.round((rightBlockTime - targetTime) / expectedBlockTime)
-        )
+        searchBlockNumber =
+          rightBlockNumber -
+          Math.max(
+            1,
+            Math.round((rightBlockTime - targetTime) / expectedBlockTime)
+          )
         // If estimation goes too low, search block in the middle instead
-        if ( searchBlockNumber < leftBlockNumber + 1) {
-          searchBlockNumber = Math.floor((leftBlockNumber + rightBlockNumber) / 2)
+        if (searchBlockNumber < leftBlockNumber + 1) {
+          searchBlockNumber = Math.floor(
+            (leftBlockNumber + rightBlockNumber) / 2
+          )
         }
       }
       // Load search block time
@@ -415,9 +421,11 @@ function BlockTime(): React.ReactElement {
               <Spin />
             </div>
           )}
-          {defaultBlockTime && (
+          {defaultBlockTime !== undefined && (
             <div className='ml-2 mt-2 default-block-time'>
-              Default value: {defaultBlockTime} ms
+              {defaultBlockTime === 0
+                ? "No default value"
+                : `Default value: ${defaultBlockTime} ms`}
             </div>
           )}
         </Row>
