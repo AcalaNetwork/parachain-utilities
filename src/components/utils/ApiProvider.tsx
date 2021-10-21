@@ -1,6 +1,7 @@
 import React, { FC, useCallback, useRef } from "react"
 
 import { ApiPromise, WsProvider } from "@polkadot/api"
+import { typesBundle, typesChain } from "@polkadot/apps-config"
 import { PolkadotNetwork } from "../../types"
 
 export interface ApiContextData {
@@ -24,7 +25,10 @@ export const connectToApi = async (
       return apiConnections[network.networkName]
     }
 
-    const listOfEndpoints = network.endpoints.filter(endpoint => endpoint.enabled)
+    const listOfEndpoints = network.endpoints.filter(
+      endpoint => endpoint.enabled
+    )
+
     if (listOfEndpoints.length === 0) listOfEndpoints.push(network.endpoints[0])
 
     const provider = new WsProvider(
@@ -42,6 +46,8 @@ export const connectToApi = async (
 
     const api = await ApiPromise.create({
       provider,
+      typesBundle,
+      typesChain,
     })
 
     api.on("disconnected", () => {

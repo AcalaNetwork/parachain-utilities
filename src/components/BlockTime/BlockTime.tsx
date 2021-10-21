@@ -55,9 +55,10 @@ function BlockTime(): React.ReactElement {
         apiStatus,
         config.selectedNetwork || ({} as PolkadotNetwork)
       )
-      const timeMs = auxApi.consts.babe.expectedBlockTime.toNumber()
 
-      if (!formBlocks.getFieldValue("expectedBlockTime")) {
+      const timeMs = auxApi.consts?.babe?.expectedBlockTime.toNumber()
+
+      if (timeMs && !formBlocks.getFieldValue("expectedBlockTime")) {
         formBlocks.setFieldsValue({
           expectedBlockTime: timeMs,
         })
@@ -303,7 +304,7 @@ function BlockTime(): React.ReactElement {
         )
         // If estimation goes too high, search block in the middle instead
         if ( searchBlockNumber > rightBlockNumber - 1) {
-          searchBlockNumber = Math.ceil(leftBlockNumber + rightBlockNumber / 2)
+          searchBlockNumber = Math.ceil((leftBlockNumber + rightBlockNumber) / 2)
         }
       } else {
         // Estimate using expectedBlockTime
@@ -314,7 +315,7 @@ function BlockTime(): React.ReactElement {
         )
         // If estimation goes too low, search block in the middle instead
         if ( searchBlockNumber < leftBlockNumber + 1) {
-          searchBlockNumber = Math.floor(leftBlockNumber + rightBlockNumber / 2)
+          searchBlockNumber = Math.floor((leftBlockNumber + rightBlockNumber) / 2)
         }
       }
       // Load search block time

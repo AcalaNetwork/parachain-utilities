@@ -51,9 +51,6 @@
     "eslint-plugin-react": "^7.25.1",
     "prettier": "^2.4.0"
   },
-  "resolutions": {
-    "@acala-network/type-definitions": "^3.0.2-3"
-  },
   "eslintConfig": {
     "extends": [
       "react-app",
