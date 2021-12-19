@@ -74,9 +74,9 @@ function ParachainUtilities(): React.ReactElement {
 
         newNetworks = Object.values(networksMap)
 
-         // Make default networks first
-         for (const network of defaultNetworks.reverse()) {
-          const idx = newNetworks.findIndex(x => x.networkName === network)
+        // Make default networks first
+        for (const network of defaultNetworks.reverse()) {
+          const idx = newNetworks.findIndex((x) => x.networkName === network)
           newNetworks.unshift(newNetworks.splice(idx, 1)[0])
         }
 
