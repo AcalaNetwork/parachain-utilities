@@ -14,7 +14,7 @@
   "dependencies": {
     "@ant-design/icons": "^4.6.4",
     "@craco/craco": "^6.3.0",
-    "@polkadot/api": "^6.4.2",
+    "@polkadot/api": "^6.12.1",
     "@polkadot/apps-config": "^0.98.1",
     "@polkadot/util": "^8.2.2",
     "antd": "^4.16.13",
