@@ -11,6 +11,11 @@
     "prettier": "prettier --check src/**/*.{ts,tsx,json,css,less}",
     "prettier:fix": "prettier --write src/**/*.{ts,tsx,json,css,less}"
   },
+  "resolutions": {
+    "@polkadot/types": "^6.12.1",
+    "@polkadot/util": "^8.2.2",
+    "@polkadot/util-crypto": "^8.2.2"
+  },
   "dependencies": {
     "@ant-design/icons": "^4.6.4",
     "@craco/craco": "^6.3.0",
