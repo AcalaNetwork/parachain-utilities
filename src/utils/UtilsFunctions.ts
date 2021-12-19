@@ -1,10 +1,6 @@
 import moment, { Moment } from "moment"
 import { encodeAddress } from "@polkadot/util-crypto/address"
-import {
-  BN,
-  BN_THOUSAND,
-  BN_TWO,
-} from "@polkadot/util"
+import { BN, BN_THOUSAND, BN_TWO } from "@polkadot/util"
 import { SubstrateAddress, TransformedSubstrateAddress } from "../types"
 import * as prefixes from "../utils/ss58-registry.json"
 import { ApiPromise } from "@polkadot/api"

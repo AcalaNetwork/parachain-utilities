@@ -11,6 +11,7 @@ import {
   ADD_ENDPOINT,
   DELETE_ENDPOINT,
   TOGGLE_ENDPOINT,
+  RESET_CONFIG,
 } from "../actions/configActions"
 
 const initialState: ConfigState = {
@@ -118,6 +119,11 @@ const configReducer = (
           return auxNetwork
         }),
       }
+    case RESET_CONFIG:
+        return {
+          ...state,
+          networks: [],
+        }
     default:
       return state
   }

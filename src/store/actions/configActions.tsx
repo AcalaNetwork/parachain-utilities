@@ -11,6 +11,7 @@ export const TOGGLE_NETWORK = "TOGGLE_NETWORK"
 export const ADD_ENDPOINT = "ADD_ENDPOINT"
 export const DELETE_ENDPOINT = "DELETE_ENDPOINT"
 export const TOGGLE_ENDPOINT = "TOGGLE_ENDPOINT"
+export const RESET_CONFIG = "RESET_CONFIG"
 
 export const setConfig = (config: ConfigState): AnyAction => {
   return {
@@ -97,5 +98,11 @@ export const toggleEndpoint = (
       networkName,
       endpointValue,
     },
+  }
+}
+
+export const resetConfig = (): AnyAction => {
+  return {
+    type: RESET_CONFIG,
   }
 }

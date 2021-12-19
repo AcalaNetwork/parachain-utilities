@@ -17,7 +17,7 @@ import "./ParachainUtilities.less"
 
 function ParachainUtilities(): React.ReactElement {
   const [isLoading, setIsLoading] = useState(false)
-  const config = useAppSelector(state => {
+  const config = useAppSelector((state) => {
     return state.config
   })
   const dispatch = useAppDispatch()
@@ -63,12 +63,22 @@ function ParachainUtilities(): React.ReactElement {
             }
           }
         }
-        // By default enable Polkadot and Kusama
-        networksMap["Polkadot"].enabled = true
-        networksMap["Polkadot"].endpoints[0].enabled = true
-        networksMap["Kusama"].enabled = true
-        networksMap["Kusama"].endpoints[0].enabled = true
+
+        const defaultNetworks = ["Polkadot", "Kusama", "Acala", "Karura"]
+
+        // Enable some default networks
+        for (const network of defaultNetworks) {
+          networksMap[network].enabled = true
+          networksMap[network].endpoints[0].enabled = true
+        }
+
         newNetworks = Object.values(networksMap)
+
+        // Make default networks first
+        for (const network of defaultNetworks.reverse()) {
+          const idx = newNetworks.findIndex((x) => x.networkName === network)
+          newNetworks.unshift(newNetworks.splice(idx, 1)[0])
+        }
 
         dispatch(setNetworkList(newNetworks))
       }
@@ -76,7 +86,7 @@ function ParachainUtilities(): React.ReactElement {
       if (!config.selectedNetwork) {
         dispatch(
           selectNetwork(
-            config.networks?.find(auxEndpoint => auxEndpoint.enabled) ||
+            config.networks?.find((auxEndpoint) => auxEndpoint.enabled) ||
               newNetworks[0]
           )
         )
@@ -90,20 +100,20 @@ function ParachainUtilities(): React.ReactElement {
   return (
     <BrowserRouter>
       <Spin spinning={isLoading} indicator={CustomSpinner}>
-        <Layout className='app-layout'>
+        <Layout className="app-layout">
           <NavbarComponent />
-          <Layout.Content className='app-content'>
+          <Layout.Content className="app-content">
             <Switch>
-              <Route exact path='/address-book' component={AddressBook} />
+              <Route exact path="/address-book" component={AddressBook} />
               <Route
                 exact
-                path='/average-block-time'
+                path="/average-block-time"
                 component={AverageBlockTime}
               />
-              <Route exact path='/block-time' component={BlockTime} />
-              <Route exact path='/block-author' component={BlockAuthor} />
-              <Route exact path='/config' component={Configuration} />
-              <Redirect to='/address-book' />
+              <Route exact path="/block-time" component={BlockTime} />
+              <Route exact path="/block-author" component={BlockAuthor} />
+              <Route exact path="/config" component={Configuration} />
+              <Redirect to="/address-book" />
             </Switch>
           </Layout.Content>
         </Layout>
