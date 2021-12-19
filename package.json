@@ -20,7 +20,7 @@
     "@ant-design/icons": "^4.6.4",
     "@craco/craco": "^6.4.3",
     "@polkadot/api": "^6.12.1",
-    "@polkadot/apps-config": "^0.98.1",
+    "@polkadot/apps-config": "^0.98.2-162",
     "@polkadot/util": "^8.2.2",
     "antd": "^4.16.13",
     "craco-antd": "^1.19.0",

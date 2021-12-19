@@ -63,12 +63,22 @@ function ParachainUtilities(): React.ReactElement {
             }
           }
         }
-        // By default enable Polkadot and Kusama
-        networksMap["Polkadot"].enabled = true
-        networksMap["Polkadot"].endpoints[0].enabled = true
-        networksMap["Kusama"].enabled = true
-        networksMap["Kusama"].endpoints[0].enabled = true
+
+        const defaultNetworks = ["Polkadot", "Kusama", "Acala", "Karura"]
+
+        // Enable some default networks
+        for (const network of defaultNetworks) {
+          networksMap[network].enabled = true
+          networksMap[network].endpoints[0].enabled = true
+        }
+
         newNetworks = Object.values(networksMap)
+
+         // Make default networks first
+         for (const network of defaultNetworks.reverse()) {
+          const idx = newNetworks.findIndex(x => x.networkName === network)
+          newNetworks.unshift(newNetworks.splice(idx, 1)[0])
+        }
 
         dispatch(setNetworkList(newNetworks))
       }
