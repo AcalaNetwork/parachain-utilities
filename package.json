@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.4",
-    "@craco/craco": "^6.3.0",
+    "@craco/craco": "^6.4.3",
     "@polkadot/api": "^6.12.1",
     "@polkadot/apps-config": "^0.98.1",
     "@polkadot/util": "^8.2.2",
@@ -51,7 +51,6 @@
     "@types/webfontloader": "^1.6.33",
     "@typescript-eslint/eslint-plugin": "^5.7.0",
     "@typescript-eslint/parser": "^5.7.0",
-    "eslint": "^8.5.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-react": "^7.27.1",
     "prettier": "^2.5.1"
