@@ -15,7 +15,11 @@ import {
 import { Moment } from "moment"
 import React, { useContext, useEffect, useState } from "react"
 import { useAppSelector } from "../../store/hooks"
-import { formatDate, getExpectedBlockTime, toUnixTimestamp } from "../../utils/UtilsFunctions"
+import {
+  formatDate,
+  getExpectedBlockTime,
+  toUnixTimestamp,
+} from "../../utils/UtilsFunctions"
 import { ApiContext, ApiContextData, connectToApi } from "../utils/ApiProvider"
 import "./BlockTime.less"
 
@@ -29,14 +33,15 @@ interface BlockTimeResult {
   chainName: string
   estimateResult?: number | string
   type: string
+  blocksDifference: number
 }
 
 function BlockTime(): React.ReactElement {
   const { apiConnections, apiStatus } = useContext<ApiContextData>(ApiContext)
   const [formBlocks] = Form.useForm()
-  const config = useAppSelector(state => state.config)
+  const config = useAppSelector((state) => state.config)
   const selectedNetworks = config.networks.filter(
-    auxNetwork => auxNetwork.enabled
+    (auxNetwork) => auxNetwork.enabled
   )
   const [results, setResults] = useState<Array<BlockTimeResult>>([])
   const [isOptionalFieldsValid, setIsOptionalFieldsValid] = useState(false)
@@ -55,14 +60,12 @@ function BlockTime(): React.ReactElement {
       setIsExpectedTimeLoading(true)
 
       const apis = await Promise.all(
-        selectedNetworks.map(auxNetwork => {
+        selectedNetworks.map((auxNetwork) => {
           return connectToApi(apiConnections, apiStatus, auxNetwork)
         })
       )
 
-      const newDefaults = apis.map(auxApi =>
-        getExpectedBlockTime(auxApi)
-      )
+      const newDefaults = apis.map((auxApi) => getExpectedBlockTime(auxApi))
 
       formBlocks.setFieldsValue({
         blockTimes: newDefaults.map(
@@ -71,7 +74,7 @@ function BlockTime(): React.ReactElement {
         ),
       })
 
-      setDefaultBlockTimes(newDefaults.map(auxDefault => auxDefault || 0))
+      setDefaultBlockTimes(newDefaults.map((auxDefault) => auxDefault || 0))
       setIsExpectedTimeLoading(false)
     } catch (err) {
       console.log(err)
@@ -81,7 +84,7 @@ function BlockTime(): React.ReactElement {
   }
 
   const resetAllBlockTimes = () => {
-    const blockTimes = defaultBlockTimes.map(auxTime => auxTime || 6000)
+    const blockTimes = defaultBlockTimes.map((auxTime) => auxTime || 6000)
     formBlocks.setFieldsValue({
       blockTimes,
     })
@@ -175,6 +178,7 @@ function BlockTime(): React.ReactElement {
 
         let formattedResult = ""
         let type = ""
+        const blocksDifference = blockNumber - currentBlockNumber
 
         // If it is future, estimate the date time
         if (blockNumber > currentBlockNumber) {
@@ -184,7 +188,7 @@ function BlockTime(): React.ReactElement {
           const currentTime = await api.query.timestamp.now.at(currentHash)
           const estimatedTime =
             currentTime.toNumber() +
-            expectedBlockTimes[index] * (blockNumber - currentBlockNumber)
+            expectedBlockTimes[index] * blocksDifference
           formattedResult = formatDate(estimatedTime, config.utcTime)
           type = "Future"
 
@@ -201,6 +205,7 @@ function BlockTime(): React.ReactElement {
           chainName: selectedNetworks[index].networkName,
           estimateResult: formattedResult,
           type,
+          blocksDifference,
         })
 
         index += 1
@@ -244,7 +249,9 @@ function BlockTime(): React.ReactElement {
         if (inputTimestamp > currentTime) {
           result =
             currentBlockNumber +
-            Math.ceil((inputTimestamp - currentTime) / expectedBlockTimes[index])
+            Math.ceil(
+              (inputTimestamp - currentTime) / expectedBlockTimes[index]
+            )
           type = "Future"
 
           // If it is past, find the block number
@@ -260,13 +267,14 @@ function BlockTime(): React.ReactElement {
         }
 
         // Add estimate to results
-        setResults(oldResults => {
+        setResults((oldResults) => {
           return [
             ...oldResults,
             {
               chainName: selectedNetworks[index].networkName,
               estimateResult: result,
               type,
+              blocksDifference: result - currentBlockNumber,
             },
           ]
         })
@@ -388,6 +396,10 @@ function BlockTime(): React.ReactElement {
     return <div>{row.estimateResult}</div>
   }
 
+  const renderBlocksDifference = (row: BlockTimeResult) => {
+    return <div>{row.blocksDifference} blocks</div>
+  }
+
   const columns = [
     {
       title: "Chain",
@@ -404,41 +416,48 @@ function BlockTime(): React.ReactElement {
       key: "action",
       render: renderResult,
     },
+    {
+      title: "Blocks Difference",
+      key: "action",
+      render: renderBlocksDifference,
+    },
   ]
 
   return (
-    <div className='block-time-container'>
+    <div className="block-time-container">
       <Form
-        className='mb-4'
-        layout='horizontal'
+        className="mb-4"
+        layout="horizontal"
         form={formBlocks}
         onValuesChange={checkOptionalFields}
         initialValues={{
           chain: config.selectedNetwork?.networkName,
           blockTimes: selectedNetworks.map(() => undefined),
         }}
-        onFinish={handleOnCalculate}>
+        onFinish={handleOnCalculate}
+      >
         <Row>
           <Space>
-            <Form.Item name='blockNumber' label='Block Number'>
-              <InputNumber className='block-number-input' min={1} />
+            <Form.Item name="blockNumber" label="Block Number">
+              <InputNumber className="block-number-input" min={1} />
             </Form.Item>
-            <Form.Item name='datetime' label='Date time'>
+            <Form.Item name="datetime" label="Date time">
               <DatePicker showTime />
             </Form.Item>
           </Space>
         </Row>
-        <Form.List name='blockTimes'>
+        <Form.List name="blockTimes">
           {(fields, operations, { errors }) => {
             return (
               <div>
-                <Row className='mb-2'>
+                <Row className="mb-2">
                   <Col>Expected Block Times (ms):</Col>{" "}
                   <Col>
                     <Button
-                      className='reset-block-time-btn ml-3'
+                      className="reset-block-time-btn ml-3"
                       onClick={resetAllBlockTimes}
-                      disabled={isExpectedTimeLoading}>
+                      disabled={isExpectedTimeLoading}
+                    >
                       Reset ALL block times
                     </Button>
                   </Col>
@@ -456,25 +475,27 @@ function BlockTime(): React.ReactElement {
                               message: "Please input expected block time",
                             },
                           ]}
-                          key={index}>
+                          key={index}
+                        >
                           <InputNumber min={1} />
                         </Form.Item>
                         {isExpectedTimeLoading && (
-                          <div className='ml-2 mt-2'>
+                          <div className="ml-2 mt-2">
                             <Spin />
                           </div>
                         )}
                         {defaultBlockTimes[index] !== undefined && (
-                          <div className='ml-2 mt-2 default-block-time'>
+                          <div className="ml-2 mt-2 default-block-time">
                             {defaultBlockTimes[index] === 0
                               ? "No default value"
                               : `Default value: ${defaultBlockTimes[index]} ms`}
                           </div>
                         )}
                         <Button
-                          className='reset-block-time-btn ml-3'
+                          className="reset-block-time-btn ml-3"
                           onClick={() => resetBlockTime(index)}
-                          disabled={isExpectedTimeLoading}>
+                          disabled={isExpectedTimeLoading}
+                        >
                           Reset block time
                         </Button>
                       </Row>
@@ -515,18 +536,19 @@ function BlockTime(): React.ReactElement {
         </Row> */}
         <Form.Item>
           <Button
-            className='calculate-btn'
-            type='primary'
+            className="calculate-btn"
+            type="primary"
             icon={<BarChartOutlined />}
             disabled={!isOptionalFieldsValid || isLoading}
             loading={isLoading}
-            htmlType='submit'>
+            htmlType="submit"
+          >
             Calculate Block Time
           </Button>
         </Form.Item>
       </Form>
       <h2>Result:</h2>
-      <Table dataSource={results} columns={columns} rowKey='chainName' />
+      <Table dataSource={results} columns={columns} rowKey="chainName" />
     </div>
   )
 }
