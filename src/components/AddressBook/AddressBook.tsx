@@ -19,7 +19,7 @@ function AddressBook(): React.ReactElement {
     SubstrateAddress | undefined
   >()
   const dispatch = useAppDispatch()
-  const addresses = useAppSelector(state => state.address.list)
+  const addresses = useAppSelector((state) => state.address.list)
 
   const handleAddAddress = () => {
     setShowAddAddressModal(true)
@@ -38,18 +38,20 @@ function AddressBook(): React.ReactElement {
     return (
       <Space>
         <Button
-          type='default'
+          type="default"
           icon={<DotChartOutlined />}
-          size='small'
-          onClick={() => handleViewFormats(row)}>
+          size="small"
+          onClick={() => handleViewFormats(row)}
+        >
           View Formats
         </Button>
         <Button
-          type='default'
+          type="default"
           danger
           icon={<DeleteOutlined />}
-          size='small'
-          onClick={() => handleDeleteAddress(row)}>
+          size="small"
+          onClick={() => handleDeleteAddress(row)}
+        >
           Delete
         </Button>
       </Space>
@@ -75,16 +77,17 @@ function AddressBook(): React.ReactElement {
   ]
 
   return (
-    <div className='address-book-container'>
-      <Row className='mb-3'>
+    <div className="address-book-container">
+      <Row className="mb-3">
         <Button
-          type='primary'
+          type="primary"
           onClick={handleAddAddress}
-          icon={<PlusOutlined />}>
+          icon={<PlusOutlined />}
+        >
           Add address
         </Button>
       </Row>
-      <Table dataSource={addresses} columns={columns} rowKey='key' />
+      <Table dataSource={addresses} columns={columns} rowKey="key" />
       <AddAddressModal
         showModal={showAddAddressModal}
         setShowModal={setShowAddAddressModal}

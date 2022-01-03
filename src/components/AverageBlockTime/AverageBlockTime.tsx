@@ -29,6 +29,7 @@ interface AvgBlockTimeFormValues {
 }
 
 interface AvgBlockTimeResult {
+  index: number
   startBlock: number
   startBlockTime: string
   endBlock: number
@@ -40,7 +41,7 @@ interface AvgBlockTimeResult {
 function AverageBlockTime(): React.ReactElement {
   const { apiConnections, apiStatus } = useContext<ApiContextData>(ApiContext)
   const [formBlocks] = Form.useForm()
-  const config = useAppSelector(state => state.config)
+  const config = useAppSelector((state) => state.config)
   const [results, setResults] = useState<Array<AvgBlockTimeResult>>([])
   const [isDefaultLoading, setIsDefaultLoading] = useState(false)
   const [defaultBlockTime, setDefaultBlockTime] = useState<number | undefined>()
@@ -57,7 +58,7 @@ function AverageBlockTime(): React.ReactElement {
       const selectedChain = formBlocks.getFieldValue("chain")
 
       const network = config.networks.find(
-        auxNetwork => auxNetwork.networkName === selectedChain
+        (auxNetwork) => auxNetwork.networkName === selectedChain
       )
 
       // Get default block time
@@ -170,7 +171,7 @@ function AverageBlockTime(): React.ReactElement {
       setIsLoading(true)
 
       const auxNetwork = config.networks.find(
-        auxNetwork => auxNetwork.networkName === chain
+        (auxNetwork) => auxNetwork.networkName === chain
       )
 
       if (!auxNetwork) return
@@ -189,8 +190,9 @@ function AverageBlockTime(): React.ReactElement {
 
       const timePassed = endBlockTime.toNumber() - startBlockTime.toNumber()
       const avgBlockTime = timePassed / (endBlock - startBlock) / 1000
-      setResults(oldValue => [
+      setResults((oldValue) => [
         {
+          index: oldValue.length,
           startBlock,
           startBlockTime: formatDate(startBlockTime.toNumber(), config.utcTime),
           endBlock,
@@ -211,8 +213,8 @@ function AverageBlockTime(): React.ReactElement {
   const renderStartBlock = (value: number, row: AvgBlockTimeResult) => {
     return (
       <>
-        <div className='block-number'>{value}</div>
-        <div className='block-time'>{row.startBlockTime}</div>
+        <div className="block-number">{value}</div>
+        <div className="block-time">{row.startBlockTime}</div>
       </>
     )
   }
@@ -220,8 +222,8 @@ function AverageBlockTime(): React.ReactElement {
   const renderEndBlock = (value: number, row: AvgBlockTimeResult) => {
     return (
       <>
-        <div className='block-number'>{value}</div>
-        <div className='block-time'>{row.endBlockTime}</div>
+        <div className="block-number">{value}</div>
+        <div className="block-time">{row.endBlockTime}</div>
       </>
     )
   }
@@ -257,93 +259,102 @@ function AverageBlockTime(): React.ReactElement {
   ]
 
   return (
-    <div className='average-block-time-container'>
+    <div className="average-block-time-container">
       <Form
-        className='mb-4'
-        layout='vertical'
+        className="mb-4"
+        layout="vertical"
         form={formBlocks}
         onValuesChange={checkBlockRange}
         initialValues={{ chain: config.selectedNetwork?.networkName }}
-        onFinish={handleOnCalculate}>
+        onFinish={handleOnCalculate}
+      >
         <Row gutter={30}>
-          <Col className='col-form-item'>
+          <Col className="col-form-item">
             <Form.Item
-              name='startBlock'
-              label='Start block'
+              name="startBlock"
+              label="Start block"
               rules={[
                 {
                   required: true,
                   message: "Field Required",
                 },
-              ]}>
+              ]}
+            >
               <InputNumber min={1} />
             </Form.Item>
           </Col>
           <Col>
-            <Space className='additional-data-container'>
+            <Space className="additional-data-container">
               <Button
-                className='fill-start-block-btn'
+                className="fill-start-block-btn"
                 onClick={() => fillStartBlock(1)}
-                disabled={isDefaultLoading}>
+                disabled={isDefaultLoading}
+              >
                 Last hour
               </Button>
               <Button
-                className='fill-start-block-btn'
+                className="fill-start-block-btn"
                 onClick={() => fillStartBlock(0, 1)}
-                disabled={isDefaultLoading}>
+                disabled={isDefaultLoading}
+              >
                 Last day
               </Button>
               <Button
-                className='fill-start-block-btn'
+                className="fill-start-block-btn"
                 onClick={() => fillStartBlock(0, 3)}
-                disabled={isDefaultLoading}>
+                disabled={isDefaultLoading}
+              >
                 Last 3 days
               </Button>
               <Button
-                className='fill-start-block-btn'
+                className="fill-start-block-btn"
                 onClick={() => fillStartBlock(0, 0, 1)}
-                disabled={isDefaultLoading}>
+                disabled={isDefaultLoading}
+              >
                 Last week
               </Button>
               <Button
-                className='fill-start-block-btn'
+                className="fill-start-block-btn"
                 onClick={() => fillStartBlock(0, 0, 0, 1)}
-                disabled={isDefaultLoading}>
+                disabled={isDefaultLoading}
+              >
                 Last month
               </Button>
             </Space>
           </Col>
         </Row>
         <Row gutter={30}>
-          <Col className='col-form-item'>
+          <Col className="col-form-item">
             <Form.Item
-              name='endBlock'
-              label='End block'
+              name="endBlock"
+              label="End block"
               rules={[
                 {
                   required: true,
                   message: "Field Required",
                 },
-              ]}>
+              ]}
+            >
               <InputNumber min={1} />
             </Form.Item>
           </Col>
-          <Col className='col-form-item'>
+          <Col className="col-form-item">
             <Form.Item
-              name='expectedBlockTime'
-              label='Expected block time (ms)'>
+              name="expectedBlockTime"
+              label="Expected block time (ms)"
+            >
               <InputNumber min={1} />
             </Form.Item>
           </Col>
-          <Col className='pl-0'>
-            <div className='additional-data-container'>
+          <Col className="pl-0">
+            <div className="additional-data-container">
               {isDefaultLoading && (
-                <div className='ml-2 mt-2'>
+                <div className="ml-2 mt-2">
                   <Spin />
                 </div>
               )}
               {defaultBlockTime !== undefined && (
-                <div className='ml-2 mt-2 default-block-time'>
+                <div className="ml-2 mt-2 default-block-time">
                   {defaultBlockTime === 0
                     ? "No default value"
                     : `Default value: ${defaultBlockTime} ms`}
@@ -352,28 +363,30 @@ function AverageBlockTime(): React.ReactElement {
             </div>
           </Col>
           <Col>
-            <div className='additional-data-container'>
+            <div className="additional-data-container">
               <Button
-                className='reset-block-time-btn'
+                className="reset-block-time-btn"
                 onClick={resetBlockTime}
-                disabled={isDefaultLoading || defaultBlockTime === undefined}>
+                disabled={isDefaultLoading || defaultBlockTime === undefined}
+              >
                 Reset block time
               </Button>
             </div>
           </Col>
         </Row>
         <Form.Item
-          name='chain'
-          label='Chain'
+          name="chain"
+          label="Chain"
           rules={[
             {
               required: true,
               message: "Field Required",
             },
-          ]}>
-          <Select onChange={handleNetworkChange} placeholder='Select chain...'>
+          ]}
+        >
+          <Select onChange={handleNetworkChange} placeholder="Select chain...">
             {config.networks
-              .filter(network => network.enabled)
+              .filter((network) => network.enabled)
               .map((network, index) => (
                 <Select.Option key={index} value={network.networkName}>
                   {network.networkName}
@@ -383,18 +396,19 @@ function AverageBlockTime(): React.ReactElement {
         </Form.Item>
         <Form.Item>
           <Button
-            className='calculate-btn'
-            type='primary'
+            className="calculate-btn"
+            type="primary"
             icon={<BarChartOutlined />}
             disabled={!isBlockRangeValid || isLoading || isDefaultLoading}
             loading={isLoading}
-            htmlType='submit'>
+            htmlType="submit"
+          >
             Calculate Average Block Time
           </Button>
         </Form.Item>
       </Form>
       <h2>Results:</h2>
-      <Table dataSource={results} columns={columns} rowKey='chain' />
+      <Table dataSource={results} columns={columns} rowKey="index" />
     </div>
   )
 }
