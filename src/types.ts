@@ -1,33 +1,33 @@
-import { HTMLProps, ReactNode } from 'react';
+import { HTMLProps, ReactNode } from 'react'
 
 export interface SubstrateAddress {
-  name: string;
-  key: string;
+  name: string
+  key: string
   transformed: TransformedSubstrateAddress[]
 }
 
 export interface TransformedSubstrateAddress {
-  prefix: number;
-  value: string;
+  prefix: number
+  value: string
 }
 
 export interface PolkadotNetwork {
-  networkName: string;
+  networkName: string
   endpoints: RPCEndpoint[]
-  enabled: boolean;
-  prefix?: number;
+  enabled: boolean
+  prefix?: number
 }
 
 export interface RPCEndpoint {
-  value: string;
-  hostedBy?: string;
-  enabled: boolean;
+  value: string
+  hostedBy?: string
+  enabled: boolean
 }
 
 export interface ConfigState {
-  networks: PolkadotNetwork[],
+  networks: PolkadotNetwork[]
   selectedNetwork?: PolkadotNetwork
-  utcTime: boolean,
+  utcTime: boolean
 }
 
 export interface AddressState {

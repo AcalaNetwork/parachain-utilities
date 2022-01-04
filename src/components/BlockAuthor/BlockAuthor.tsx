@@ -1,24 +1,11 @@
-import { BarChartOutlined, CaretRightOutlined } from "@ant-design/icons"
-import {
-  Button,
-  Col,
-  Collapse,
-  Form,
-  InputNumber,
-  List,
-  message,
-  Row,
-  Select,
-  Space,
-  Spin,
-  Table,
-} from "antd"
-import React, { useContext, useEffect, useState } from "react"
-import { useAppSelector } from "../../store/hooks"
-import { PolkadotNetwork } from "../../types"
-import { estimateStartBlockNumber, findAuthorName, getExpectedBlockTime } from "../../utils/UtilsFunctions"
-import { ApiContext, ApiContextData, connectToApi } from "../utils/ApiProvider"
-import "./BlockAuthor.less"
+import { BarChartOutlined, CaretRightOutlined } from '@ant-design/icons'
+import { Button, Col, Collapse, Form, InputNumber, List, message, Row, Select, Space, Spin, Table } from 'antd'
+import React, { useContext, useEffect, useState } from 'react'
+import { useAppSelector } from '../../store/hooks'
+import { PolkadotNetwork } from '../../types'
+import { estimateStartBlockNumber, findAuthorName, getExpectedBlockTime } from '../../utils/UtilsFunctions'
+import { ApiContext, ApiContextData, connectToApi } from '../utils/ApiProvider'
+import './BlockAuthor.less'
 
 interface BlockAuthorFormValues {
   startBlock: number
@@ -40,8 +27,8 @@ interface BlockInfo {
 function BlockAuthor(): React.ReactElement {
   const { apiConnections, apiStatus } = useContext<ApiContextData>(ApiContext)
   const [formBlocks] = Form.useForm()
-  const addresses = useAppSelector(state => state.address.list)
-  const config = useAppSelector(state => state.config)
+  const addresses = useAppSelector((state) => state.address.list)
+  const config = useAppSelector((state) => state.config)
   const [results, setResults] = useState<Array<BlockAuthorResult>>([])
   const [isDefaultLoading, setIsDefaultLoading] = useState(false)
   const [defaultBlockTime, setDefaultBlockTime] = useState<number | undefined>()
@@ -55,18 +42,12 @@ function BlockAuthor(): React.ReactElement {
   const loadDefaults = async (overwriteValues = false) => {
     try {
       setIsDefaultLoading(true)
-      const selectedChain = formBlocks.getFieldValue("chain")
+      const selectedChain = formBlocks.getFieldValue('chain')
 
-      const network = config.networks.find(
-        auxNetwork => auxNetwork.networkName === selectedChain
-      )
+      const network = config.networks.find((auxNetwork) => auxNetwork.networkName === selectedChain)
 
       // Get default block time
-      const auxApi = await connectToApi(
-        apiConnections,
-        apiStatus,
-        network || ({} as PolkadotNetwork)
-      )
+      const auxApi = await connectToApi(apiConnections, apiStatus, network || ({} as PolkadotNetwork))
 
       const timeMs = getExpectedBlockTime(auxApi)
 
@@ -74,19 +55,13 @@ function BlockAuthor(): React.ReactElement {
       const latestBlock = await auxApi.rpc.chain.getHeader()
       const currentBlockNumber = latestBlock.number.toNumber()
 
-      if (
-        timeMs &&
-        (overwriteValues || !formBlocks.getFieldValue("expectedBlockTime"))
-      ) {
+      if (timeMs && (overwriteValues || !formBlocks.getFieldValue('expectedBlockTime'))) {
         formBlocks.setFieldsValue({
           expectedBlockTime: timeMs,
         })
       }
 
-      if (
-        currentBlockNumber &&
-        (overwriteValues || !formBlocks.getFieldValue("endBlock"))
-      ) {
+      if (currentBlockNumber && (overwriteValues || !formBlocks.getFieldValue('endBlock'))) {
         formBlocks.setFieldsValue({
           endBlock: currentBlockNumber,
         })
@@ -95,7 +70,7 @@ function BlockAuthor(): React.ReactElement {
       setIsDefaultLoading(false)
     } catch (err) {
       console.log(err)
-      message.error("An error ocurred when trying to load end block.")
+      message.error('An error ocurred when trying to load end block.')
       setIsDefaultLoading(false)
     }
   }
@@ -104,23 +79,20 @@ function BlockAuthor(): React.ReactElement {
     loadDefaults(true)
   }
 
-  const checkBlockRange = (
-    changedValues: Record<string, unknown>,
-    values: BlockAuthorFormValues
-  ) => {
+  const checkBlockRange = (changedValues: Record<string, unknown>, values: BlockAuthorFormValues) => {
     // Validate that start block is less than or equal to end block
     if (changedValues && Number(values.startBlock) > Number(values.endBlock)) {
       setIsBlockRangeValid(false)
       formBlocks.setFields([
         {
-          name: "startBlock",
+          name: 'startBlock',
           value: values.startBlock,
-          errors: ["Start Block must be less than or equal to End Block"],
+          errors: ['Start Block must be less than or equal to End Block'],
         },
         {
-          name: "endBlock",
+          name: 'endBlock',
           value: values.endBlock,
-          errors: ["End Block must be greater than or equal to Start Block"],
+          errors: ['End Block must be greater than or equal to Start Block'],
         },
       ])
     } else {
@@ -135,23 +107,16 @@ function BlockAuthor(): React.ReactElement {
   }
 
   const fillStartBlock = (hours = 0, days = 0, weeks = 0, months = 0) => {
-    const endBlock = formBlocks.getFieldValue("endBlock")
-    const expectedBlockTime = formBlocks.getFieldValue("expectedBlockTime")
+    const endBlock = formBlocks.getFieldValue('endBlock')
+    const expectedBlockTime = formBlocks.getFieldValue('expectedBlockTime')
 
     if (!endBlock || !expectedBlockTime) {
-      message.error("Please set End block and Expected block time")
+      message.error('Please set End block and Expected block time')
       return
     }
 
     formBlocks.setFieldsValue({
-      startBlock: estimateStartBlockNumber(
-        endBlock,
-        expectedBlockTime,
-        hours,
-        days,
-        weeks,
-        months
-      ),
+      startBlock: estimateStartBlockNumber(endBlock, expectedBlockTime, hours, days, weeks, months),
     })
 
     setIsBlockRangeValid(true)
@@ -171,9 +136,7 @@ function BlockAuthor(): React.ReactElement {
 
       setIsLoading(true)
 
-      const auxNetwork = config.networks.find(
-        auxNetwork => auxNetwork.networkName === chain
-      )
+      const auxNetwork = config.networks.find((auxNetwork) => auxNetwork.networkName === chain)
 
       if (!auxNetwork) return
 
@@ -186,13 +149,8 @@ function BlockAuthor(): React.ReactElement {
         let promiseCount = 0
         const allowedParallel = 10
         let promises = []
-        while (
-          promiseCount < allowedParallel &&
-          loadedUntil + promiseCount <= endBlock
-        ) {
-          promises.push(
-            auxApi.rpc.chain.getBlockHash(loadedUntil + promiseCount)
-          )
+        while (promiseCount < allowedParallel && loadedUntil + promiseCount <= endBlock) {
+          promises.push(auxApi.rpc.chain.getBlockHash(loadedUntil + promiseCount))
           promiseCount += 1
         }
         const newHashes = await Promise.all(promises)
@@ -231,7 +189,7 @@ function BlockAuthor(): React.ReactElement {
       setIsLoading(false)
     } catch (err) {
       console.log(err)
-      message.error("An error ocurred when loading block data.")
+      message.error('An error ocurred when loading block data.')
       setIsLoading(false)
     }
   }
@@ -239,7 +197,7 @@ function BlockAuthor(): React.ReactElement {
   const renderAuthor = (row: BlockAuthorResult) => {
     return (
       <>
-        {row.authorName && <Row className='address-name'>{row.authorName}</Row>}
+        {row.authorName && <Row className="address-name">{row.authorName}</Row>}
         <Row>{row.authorAddress}</Row>
       </>
     )
@@ -247,22 +205,14 @@ function BlockAuthor(): React.ReactElement {
 
   const renderBlocks = (row: BlockAuthorResult) => {
     return (
-      <Collapse
-        accordion={true}
-        expandIcon={({ isActive }) => (
-          <CaretRightOutlined rotate={isActive ? 90 : 0} />
-        )}>
-        <Collapse.Panel
-          className='collapse-blocks'
-          header={`${row.blocks.length} blocks`}
-          key={row.authorAddress}>
+      <Collapse accordion={true} expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}>
+        <Collapse.Panel className="collapse-blocks" header={`${row.blocks.length} blocks`} key={row.authorAddress}>
           <List
-            size='small'
+            size="small"
             dataSource={row.blocks}
-            renderItem={item => (
+            renderItem={(item) => (
               <List.Item>
-                <span className='block-number'>{item.number}</span> -{" "}
-                {item.hash}
+                <span className="block-number">{item.number}</span> - {item.hash}
               </List.Item>
             )}
           />
@@ -273,135 +223,129 @@ function BlockAuthor(): React.ReactElement {
 
   const columns = [
     {
-      title: "Author",
-      key: "author",
+      title: 'Author',
+      key: 'author',
       render: renderAuthor,
     },
     {
-      title: "Number of Blocks",
-      key: "numberOfBlocks",
+      title: 'Number of Blocks',
+      key: 'numberOfBlocks',
       render: renderBlocks,
     },
   ]
 
   return (
-    <div className='block-author-container'>
+    <div className="block-author-container">
       <Form
-        className='mb-4'
-        layout='vertical'
+        className="mb-4"
+        layout="vertical"
         form={formBlocks}
         onValuesChange={checkBlockRange}
         initialValues={{ chain: config.selectedNetwork?.networkName }}
-        onFinish={handleOnCalculate}>
+        onFinish={handleOnCalculate}
+      >
         <Row gutter={30}>
-          <Col className='col-form-item'>
+          <Col className="col-form-item">
             <Form.Item
-              name='startBlock'
-              label='Start block'
+              name="startBlock"
+              label="Start block"
               rules={[
                 {
                   required: true,
-                  message: "Field Required",
+                  message: 'Field Required',
                 },
-              ]}>
+              ]}
+            >
               <InputNumber min={1} />
             </Form.Item>
           </Col>
           <Col>
-            <Space className='additional-data-container'>
-              <Button
-                className='fill-start-block-btn'
-                onClick={() => fillStartBlock(1)}
-                disabled={isDefaultLoading}>
+            <Space className="additional-data-container">
+              <Button className="fill-start-block-btn" onClick={() => fillStartBlock(1)} disabled={isDefaultLoading}>
                 Last hour
               </Button>
-              <Button
-                className='fill-start-block-btn'
-                onClick={() => fillStartBlock(0, 1)}
-                disabled={isDefaultLoading}>
+              <Button className="fill-start-block-btn" onClick={() => fillStartBlock(0, 1)} disabled={isDefaultLoading}>
                 Last day
               </Button>
-              <Button
-                className='fill-start-block-btn'
-                onClick={() => fillStartBlock(0, 3)}
-                disabled={isDefaultLoading}>
+              <Button className="fill-start-block-btn" onClick={() => fillStartBlock(0, 3)} disabled={isDefaultLoading}>
                 Last 3 days
               </Button>
               <Button
-                className='fill-start-block-btn'
+                className="fill-start-block-btn"
                 onClick={() => fillStartBlock(0, 0, 1)}
-                disabled={isDefaultLoading}>
+                disabled={isDefaultLoading}
+              >
                 Last week
               </Button>
               <Button
-                className='fill-start-block-btn'
+                className="fill-start-block-btn"
                 onClick={() => fillStartBlock(0, 0, 0, 1)}
-                disabled={isDefaultLoading}>
+                disabled={isDefaultLoading}
+              >
                 Last month
               </Button>
             </Space>
           </Col>
         </Row>
         <Row gutter={30}>
-          <Col className='col-form-item'>
+          <Col className="col-form-item">
             <Form.Item
-              name='endBlock'
-              label='End block'
+              name="endBlock"
+              label="End block"
               rules={[
                 {
                   required: true,
-                  message: "Field Required",
+                  message: 'Field Required',
                 },
-              ]}>
+              ]}
+            >
               <InputNumber min={1} />
             </Form.Item>
           </Col>
-          <Col className='col-form-item'>
-            <Form.Item
-              name='expectedBlockTime'
-              label='Expected block time (ms)'>
+          <Col className="col-form-item">
+            <Form.Item name="expectedBlockTime" label="Expected block time (ms)">
               <InputNumber min={1} />
             </Form.Item>
           </Col>
-          <Col className='pl-0'>
-            <div className='additional-data-container'>
+          <Col className="pl-0">
+            <div className="additional-data-container">
               {isDefaultLoading && (
-                <div className='ml-2 mt-2'>
+                <div className="ml-2 mt-2">
                   <Spin />
                 </div>
               )}
               {defaultBlockTime !== undefined && (
-                <div className='ml-2 mt-2 default-block-time'>
-                  {defaultBlockTime === 0
-                    ? "No default value"
-                    : `Default value: ${defaultBlockTime} ms`}
+                <div className="ml-2 mt-2 default-block-time">
+                  {defaultBlockTime === 0 ? 'No default value' : `Default value: ${defaultBlockTime} ms`}
                 </div>
               )}
             </div>
           </Col>
           <Col>
-            <div className='additional-data-container'>
+            <div className="additional-data-container">
               <Button
-                className='reset-block-time-btn'
+                className="reset-block-time-btn"
                 onClick={resetBlockTime}
-                disabled={isDefaultLoading || defaultBlockTime === undefined}>
+                disabled={isDefaultLoading || defaultBlockTime === undefined}
+              >
                 Reset block time
               </Button>
             </div>
           </Col>
         </Row>
         <Form.Item
-          name='chain'
-          label='Chain'
+          name="chain"
+          label="Chain"
           rules={[
             {
               required: true,
-              message: "Field Required",
+              message: 'Field Required',
             },
-          ]}>
-          <Select onChange={handleNetworkChange} placeholder='Select chain...'>
+          ]}
+        >
+          <Select onChange={handleNetworkChange} placeholder="Select chain...">
             {config.networks
-              .filter(network => network.enabled)
+              .filter((network) => network.enabled)
               .map((network, index) => (
                 <Select.Option key={index} value={network.networkName}>
                   {network.networkName}
@@ -411,18 +355,19 @@ function BlockAuthor(): React.ReactElement {
         </Form.Item>
         <Form.Item>
           <Button
-            className='calculate-btn'
-            type='primary'
+            className="calculate-btn"
+            type="primary"
             icon={<BarChartOutlined />}
             disabled={!isBlockRangeValid || isLoading || isDefaultLoading}
             loading={isLoading}
-            htmlType='submit'>
+            htmlType="submit"
+          >
             Load Block Authors
           </Button>
         </Form.Item>
       </Form>
       <h2>Results:</h2>
-      <Table dataSource={results} columns={columns} rowKey='authorAddress' />
+      <Table dataSource={results} columns={columns} rowKey="authorAddress" />
     </div>
   )
 }

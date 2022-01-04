@@ -1,9 +1,9 @@
-import { AnyAction } from "redux"
-import { SubstrateAddress } from "../../types"
+import { AnyAction } from 'redux'
+import { SubstrateAddress } from '../../types'
 
-export const SET_ADDRESS_LIST = "SET_ADDRESS_LIST"
-export const ADD_ADDRESS = "ADD_ADDRESS"
-export const DELETE_ADDRESS = "DELETE_ADDRESS"
+export const SET_ADDRESS_LIST = 'SET_ADDRESS_LIST'
+export const ADD_ADDRESS = 'ADD_ADDRESS'
+export const DELETE_ADDRESS = 'DELETE_ADDRESS'
 
 export const setAddressList = (addressList: SubstrateAddress[]): AnyAction => {
   return {

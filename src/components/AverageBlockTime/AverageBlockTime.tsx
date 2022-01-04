@@ -1,26 +1,11 @@
-import { BarChartOutlined } from "@ant-design/icons"
-import {
-  Button,
-  Col,
-  Form,
-  InputNumber,
-  message,
-  Row,
-  Select,
-  Space,
-  Spin,
-  Table,
-} from "antd"
-import React, { useContext, useEffect, useState } from "react"
-import { useAppSelector } from "../../store/hooks"
-import { PolkadotNetwork } from "../../types"
-import {
-  estimateStartBlockNumber,
-  formatDate,
-  getExpectedBlockTime,
-} from "../../utils/UtilsFunctions"
-import { ApiContext, ApiContextData, connectToApi } from "../utils/ApiProvider"
-import "./AverageBlockTime.less"
+import { BarChartOutlined } from '@ant-design/icons'
+import { Button, Col, Form, InputNumber, message, Row, Select, Space, Spin, Table } from 'antd'
+import React, { useContext, useEffect, useState } from 'react'
+import { useAppSelector } from '../../store/hooks'
+import { PolkadotNetwork } from '../../types'
+import { estimateStartBlockNumber, formatDate, getExpectedBlockTime } from '../../utils/UtilsFunctions'
+import { ApiContext, ApiContextData, connectToApi } from '../utils/ApiProvider'
+import './AverageBlockTime.less'
 
 interface AvgBlockTimeFormValues {
   startBlock: number
@@ -55,18 +40,12 @@ function AverageBlockTime(): React.ReactElement {
   const loadDefaults = async (overwriteValues = false) => {
     try {
       setIsDefaultLoading(true)
-      const selectedChain = formBlocks.getFieldValue("chain")
+      const selectedChain = formBlocks.getFieldValue('chain')
 
-      const network = config.networks.find(
-        (auxNetwork) => auxNetwork.networkName === selectedChain
-      )
+      const network = config.networks.find((auxNetwork) => auxNetwork.networkName === selectedChain)
 
       // Get default block time
-      const auxApi = await connectToApi(
-        apiConnections,
-        apiStatus,
-        network || ({} as PolkadotNetwork)
-      )
+      const auxApi = await connectToApi(apiConnections, apiStatus, network || ({} as PolkadotNetwork))
 
       const timeMs = getExpectedBlockTime(auxApi)
 
@@ -74,19 +53,13 @@ function AverageBlockTime(): React.ReactElement {
       const latestBlock = await auxApi.rpc.chain.getHeader()
       const currentBlockNumber = latestBlock.number.toNumber()
 
-      if (
-        timeMs &&
-        (overwriteValues || !formBlocks.getFieldValue("expectedBlockTime"))
-      ) {
+      if (timeMs && (overwriteValues || !formBlocks.getFieldValue('expectedBlockTime'))) {
         formBlocks.setFieldsValue({
           expectedBlockTime: timeMs,
         })
       }
 
-      if (
-        currentBlockNumber &&
-        (overwriteValues || !formBlocks.getFieldValue("endBlock"))
-      ) {
+      if (currentBlockNumber && (overwriteValues || !formBlocks.getFieldValue('endBlock'))) {
         formBlocks.setFieldsValue({
           endBlock: currentBlockNumber,
         })
@@ -95,7 +68,7 @@ function AverageBlockTime(): React.ReactElement {
       setIsDefaultLoading(false)
     } catch (err) {
       console.log(err)
-      message.error("An error ocurred when trying to load end block.")
+      message.error('An error ocurred when trying to load end block.')
       setIsDefaultLoading(false)
     }
   }
@@ -104,23 +77,20 @@ function AverageBlockTime(): React.ReactElement {
     loadDefaults(true)
   }
 
-  const checkBlockRange = (
-    changedValues: Record<string, unknown>,
-    values: AvgBlockTimeFormValues
-  ) => {
+  const checkBlockRange = (changedValues: Record<string, unknown>, values: AvgBlockTimeFormValues) => {
     // Validate that start block is less than end block
     if (changedValues && Number(values.startBlock) >= Number(values.endBlock)) {
       setIsBlockRangeValid(false)
       formBlocks.setFields([
         {
-          name: "startBlock",
+          name: 'startBlock',
           value: values.startBlock,
-          errors: ["Start Block must be less than End Block"],
+          errors: ['Start Block must be less than End Block'],
         },
         {
-          name: "endBlock",
+          name: 'endBlock',
           value: values.endBlock,
-          errors: ["End Block must be greater than Start Block"],
+          errors: ['End Block must be greater than Start Block'],
         },
       ])
     } else {
@@ -134,23 +104,16 @@ function AverageBlockTime(): React.ReactElement {
   }
 
   const fillStartBlock = (hours = 0, days = 0, weeks = 0, months = 0) => {
-    const endBlock = formBlocks.getFieldValue("endBlock")
-    const expectedBlockTime = formBlocks.getFieldValue("expectedBlockTime")
+    const endBlock = formBlocks.getFieldValue('endBlock')
+    const expectedBlockTime = formBlocks.getFieldValue('expectedBlockTime')
 
     if (!endBlock || !expectedBlockTime) {
-      message.error("Please set End block and Expected block time")
+      message.error('Please set End block and Expected block time')
       return
     }
 
     formBlocks.setFieldsValue({
-      startBlock: estimateStartBlockNumber(
-        endBlock,
-        expectedBlockTime,
-        hours,
-        days,
-        weeks,
-        months
-      ),
+      startBlock: estimateStartBlockNumber(endBlock, expectedBlockTime, hours, days, weeks, months),
     })
 
     setIsBlockRangeValid(true)
@@ -170,9 +133,7 @@ function AverageBlockTime(): React.ReactElement {
 
       setIsLoading(true)
 
-      const auxNetwork = config.networks.find(
-        (auxNetwork) => auxNetwork.networkName === chain
-      )
+      const auxNetwork = config.networks.find((auxNetwork) => auxNetwork.networkName === chain)
 
       if (!auxNetwork) return
 
@@ -205,7 +166,7 @@ function AverageBlockTime(): React.ReactElement {
       setIsLoading(false)
     } catch (err) {
       console.log(err)
-      message.error("An error ocurred when loading block data.")
+      message.error('An error ocurred when loading block data.')
       setIsLoading(false)
     }
   }
@@ -234,26 +195,26 @@ function AverageBlockTime(): React.ReactElement {
 
   const columns = [
     {
-      title: "Start Block",
-      dataIndex: "startBlock",
-      key: "startBlock",
+      title: 'Start Block',
+      dataIndex: 'startBlock',
+      key: 'startBlock',
       render: renderStartBlock,
     },
     {
-      title: "End Block",
-      dataIndex: "endBlock",
-      key: "endBlock",
+      title: 'End Block',
+      dataIndex: 'endBlock',
+      key: 'endBlock',
       render: renderEndBlock,
     },
     {
-      title: "Chain",
-      dataIndex: "chain",
-      key: "chain",
+      title: 'Chain',
+      dataIndex: 'chain',
+      key: 'chain',
     },
     {
-      title: "Average Block Time",
-      dataIndex: "avgBlockTime",
-      key: "avgBlockTime",
+      title: 'Average Block Time',
+      dataIndex: 'avgBlockTime',
+      key: 'avgBlockTime',
       render: renderAverageBlockTime,
     },
   ]
@@ -276,7 +237,7 @@ function AverageBlockTime(): React.ReactElement {
               rules={[
                 {
                   required: true,
-                  message: "Field Required",
+                  message: 'Field Required',
                 },
               ]}
             >
@@ -285,25 +246,13 @@ function AverageBlockTime(): React.ReactElement {
           </Col>
           <Col>
             <Space className="additional-data-container">
-              <Button
-                className="fill-start-block-btn"
-                onClick={() => fillStartBlock(1)}
-                disabled={isDefaultLoading}
-              >
+              <Button className="fill-start-block-btn" onClick={() => fillStartBlock(1)} disabled={isDefaultLoading}>
                 Last hour
               </Button>
-              <Button
-                className="fill-start-block-btn"
-                onClick={() => fillStartBlock(0, 1)}
-                disabled={isDefaultLoading}
-              >
+              <Button className="fill-start-block-btn" onClick={() => fillStartBlock(0, 1)} disabled={isDefaultLoading}>
                 Last day
               </Button>
-              <Button
-                className="fill-start-block-btn"
-                onClick={() => fillStartBlock(0, 3)}
-                disabled={isDefaultLoading}
-              >
+              <Button className="fill-start-block-btn" onClick={() => fillStartBlock(0, 3)} disabled={isDefaultLoading}>
                 Last 3 days
               </Button>
               <Button
@@ -331,7 +280,7 @@ function AverageBlockTime(): React.ReactElement {
               rules={[
                 {
                   required: true,
-                  message: "Field Required",
+                  message: 'Field Required',
                 },
               ]}
             >
@@ -339,10 +288,7 @@ function AverageBlockTime(): React.ReactElement {
             </Form.Item>
           </Col>
           <Col className="col-form-item">
-            <Form.Item
-              name="expectedBlockTime"
-              label="Expected block time (ms)"
-            >
+            <Form.Item name="expectedBlockTime" label="Expected block time (ms)">
               <InputNumber min={1} />
             </Form.Item>
           </Col>
@@ -355,9 +301,7 @@ function AverageBlockTime(): React.ReactElement {
               )}
               {defaultBlockTime !== undefined && (
                 <div className="ml-2 mt-2 default-block-time">
-                  {defaultBlockTime === 0
-                    ? "No default value"
-                    : `Default value: ${defaultBlockTime} ms`}
+                  {defaultBlockTime === 0 ? 'No default value' : `Default value: ${defaultBlockTime} ms`}
                 </div>
               )}
             </div>
@@ -380,7 +324,7 @@ function AverageBlockTime(): React.ReactElement {
           rules={[
             {
               required: true,
-              message: "Field Required",
+              message: 'Field Required',
             },
           ]}
         >

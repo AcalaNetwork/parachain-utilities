@@ -1,8 +1,8 @@
-import React, { FC, useCallback, useRef } from "react"
+import React, { FC, useCallback, useRef } from 'react'
 
-import { ApiPromise, WsProvider } from "@polkadot/api"
-import { typesBundle, typesChain } from "@polkadot/apps-config"
-import { PolkadotNetwork } from "../../types"
+import { ApiPromise, WsProvider } from '@polkadot/api'
+import { typesBundle, typesChain } from '@polkadot/apps-config'
+import { PolkadotNetwork } from '../../types'
 
 export interface ApiContextData {
   apiConnections: Record<string, ApiPromise>
@@ -11,9 +11,7 @@ export interface ApiContextData {
 }
 
 // Ensure that ApiContext always exists
-export const ApiContext = React.createContext<ApiContextData>(
-  {} as ApiContextData
-)
+export const ApiContext = React.createContext<ApiContextData>({} as ApiContextData)
 
 export const connectToApi = async (
   apiConnections: Record<string, ApiPromise>,
@@ -25,21 +23,17 @@ export const connectToApi = async (
       return apiConnections[network.networkName]
     }
 
-    const listOfEndpoints = network.endpoints.filter(
-      endpoint => endpoint.enabled
-    )
+    const listOfEndpoints = network.endpoints.filter((endpoint) => endpoint.enabled)
 
     if (listOfEndpoints.length === 0) listOfEndpoints.push(network.endpoints[0])
 
-    const provider = new WsProvider(
-      listOfEndpoints.map(endpoint => endpoint.value)
-    )
+    const provider = new WsProvider(listOfEndpoints.map((endpoint) => endpoint.value))
 
-    provider.on("disconnected", () => {
+    provider.on('disconnected', () => {
       console.log(`Disconnected from provider of ${network.networkName}`)
       apiStatus[network.networkName] = false
     })
-    provider.on("error", () => {
+    provider.on('error', () => {
       console.log(`Error on provider of ${network.networkName}`)
       apiStatus[network.networkName] = false
     })
@@ -50,11 +44,11 @@ export const connectToApi = async (
       typesChain,
     })
 
-    api.on("disconnected", () => {
+    api.on('disconnected', () => {
       console.log(`Disconnected from api of ${network.networkName}`)
       apiStatus[network.networkName] = false
     })
-    api.on("error", () => {
+    api.on('error', () => {
       console.log(`Error on api of ${network.networkName}`)
       apiStatus[network.networkName] = false
     })
@@ -69,15 +63,11 @@ export const connectToApi = async (
 }
 
 export const ApiProvider: FC = ({ children }) => {
-  const apiConnections = useRef<Record<string, ApiPromise>>(
-    {} as Record<string, ApiPromise>
-  )
-  const apiStatus = useRef<Record<string, boolean>>(
-    {} as Record<string, boolean>
-  )
+  const apiConnections = useRef<Record<string, ApiPromise>>({} as Record<string, ApiPromise>)
+  const apiStatus = useRef<Record<string, boolean>>({} as Record<string, boolean>)
 
   const deleteNetworkConnection = useCallback((networkName: string) => {
-    if (typeof apiConnections.current[networkName]?.disconnect === "function") {
+    if (typeof apiConnections.current[networkName]?.disconnect === 'function') {
       apiConnections.current[networkName].disconnect()
     }
   }, [])
@@ -88,7 +78,8 @@ export const ApiProvider: FC = ({ children }) => {
         apiConnections: apiConnections.current,
         apiStatus: apiStatus.current,
         deleteNetworkConnection,
-      }}>
+      }}
+    >
       {children}
     </ApiContext.Provider>
   )
