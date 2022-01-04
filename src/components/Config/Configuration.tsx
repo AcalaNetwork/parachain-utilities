@@ -1,16 +1,7 @@
-import React, { ReactNode, useContext, useState } from "react"
-import {
-  Button,
-  Divider,
-  message,
-  Row,
-  Space,
-  Switch,
-  Table,
-  Popconfirm,
-} from "antd"
-import "./Configuration.less"
-import { useAppDispatch, useAppSelector } from "../../store/hooks"
+import React, { ReactNode, useContext, useState } from 'react'
+import { Button, Divider, message, Row, Space, Switch, Table, Popconfirm } from 'antd'
+import './Configuration.less'
+import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import {
   deleteNetwork,
   selectNetwork,
@@ -19,24 +10,19 @@ import {
   setUtcTime,
   toggleEndpoint,
   resetConfig,
-} from "../../store/actions/configActions"
-import { PolkadotNetwork, RPCEndpoint } from "../../types"
-import {
-  CheckOutlined,
-  DeleteOutlined,
-  PlusOutlined,
-  UndoOutlined,
-} from "@ant-design/icons"
-import AddEndpointModal from "./AddEndpointModal"
-import { ApiContext, ApiContextData } from "../utils/ApiProvider"
-import AddNetworkModal from "./AddNetworkModal"
+} from '../../store/actions/configActions'
+import { PolkadotNetwork, RPCEndpoint } from '../../types'
+import { CheckOutlined, DeleteOutlined, PlusOutlined, UndoOutlined } from '@ant-design/icons'
+import AddEndpointModal from './AddEndpointModal'
+import { ApiContext, ApiContextData } from '../utils/ApiProvider'
+import AddNetworkModal from './AddNetworkModal'
 
 function Configuration(): React.ReactElement {
   const { deleteNetworkConnection } = useContext<ApiContextData>(ApiContext)
   const dispatch = useAppDispatch()
   const [showAddNetworkModal, setShowAddNetworkModal] = useState(false)
   const [showAddEndpointModal, setShowAddEndpointModal] = useState(false)
-  const [networkChosenToAdd, setNetworkChosenToAdd] = useState("")
+  const [networkChosenToAdd, setNetworkChosenToAdd] = useState('')
   const config = useAppSelector((state) => state.config)
 
   const onUtcChange = (checked: boolean) => {
@@ -47,11 +33,7 @@ function Configuration(): React.ReactElement {
     return (
       <>
         {text}
-        {row.hostedBy ? (
-          <span className="hosted-by-label"> - {row.hostedBy}</span>
-        ) : (
-          ""
-        )}
+        {row.hostedBy ? <span className="hosted-by-label"> - {row.hostedBy}</span> : ''}
       </>
     )
   }
@@ -127,12 +109,7 @@ function Configuration(): React.ReactElement {
             Default
           </Button>
         ) : (
-          <Button
-            type="default"
-            onClick={() => handleSelectNetwork(row)}
-            size="small"
-            disabled={!row.enabled}
-          >
+          <Button type="default" onClick={() => handleSelectNetwork(row)} size="small" disabled={!row.enabled}>
             Select as default
           </Button>
         )}
@@ -143,19 +120,19 @@ function Configuration(): React.ReactElement {
   const renderExpandedRow = (row: PolkadotNetwork): ReactNode => {
     const endpointColumns = [
       {
-        title: "Endpoint Name",
-        dataIndex: "value",
-        key: "value",
+        title: 'Endpoint Name',
+        dataIndex: 'value',
+        key: 'value',
         render: renderEndpointWithHost,
       },
       {
-        title: "",
-        key: "toggle",
+        title: '',
+        key: 'toggle',
         render: (endpoint: RPCEndpoint) => renderEndpointToggle(row, endpoint),
       },
       {
-        title: "Actions",
-        key: "actions",
+        title: 'Actions',
+        key: 'actions',
         render: (endpoint: RPCEndpoint) => renderEndpointActions(row, endpoint),
       },
     ]
@@ -185,24 +162,16 @@ function Configuration(): React.ReactElement {
     )
   }
 
-  const renderEndpointToggle = (
-    network: PolkadotNetwork,
-    endpoint: RPCEndpoint
-  ) => {
+  const renderEndpointToggle = (network: PolkadotNetwork, endpoint: RPCEndpoint) => {
     return (
       <Switch
         checked={endpoint.enabled}
         checkedChildren="Enabled"
         unCheckedChildren="Disabled"
         onChange={() => {
-          const enabledList = network.endpoints.filter(
-            (auxEndpoint) => auxEndpoint.enabled
-          )
-          if (
-            enabledList.length === 1 &&
-            enabledList[0].value === endpoint.value
-          ) {
-            message.warning("Needs to have at least one endpoint enabled")
+          const enabledList = network.endpoints.filter((auxEndpoint) => auxEndpoint.enabled)
+          if (enabledList.length === 1 && enabledList[0].value === endpoint.value) {
+            message.warning('Needs to have at least one endpoint enabled')
             return
           }
           handleToggleEndpoint(network.networkName, endpoint)
@@ -211,10 +180,7 @@ function Configuration(): React.ReactElement {
     )
   }
 
-  const renderEndpointActions = (
-    network: PolkadotNetwork,
-    endpoint: RPCEndpoint
-  ) => {
+  const renderEndpointActions = (network: PolkadotNetwork, endpoint: RPCEndpoint) => {
     return (
       <Space>
         <Button
@@ -223,14 +189,9 @@ function Configuration(): React.ReactElement {
           size="small"
           icon={<DeleteOutlined />}
           onClick={() => {
-            const enabledList = network.endpoints.filter(
-              (auxEndpoint) => auxEndpoint.enabled
-            )
-            if (
-              enabledList.length === 1 &&
-              enabledList[0].value === endpoint.value
-            ) {
-              message.warning("Needs to have at least one endpoint enabled")
+            const enabledList = network.endpoints.filter((auxEndpoint) => auxEndpoint.enabled)
+            if (enabledList.length === 1 && enabledList[0].value === endpoint.value) {
+              message.warning('Needs to have at least one endpoint enabled')
               return
             }
             handleDeleteEndpoint(network.networkName, endpoint)
@@ -244,18 +205,18 @@ function Configuration(): React.ReactElement {
 
   const columns = [
     {
-      title: "",
-      key: "toggle",
+      title: '',
+      key: 'toggle',
       render: renderNetworkToggle,
     },
     {
-      title: "Network Name",
-      dataIndex: "networkName",
-      key: "networkName",
+      title: 'Network Name',
+      dataIndex: 'networkName',
+      key: 'networkName',
     },
     {
-      title: "Actions",
-      key: "actions",
+      title: 'Actions',
+      key: 'actions',
       render: renderNetworkActions,
     },
   ]
@@ -265,35 +226,20 @@ function Configuration(): React.ReactElement {
       <Row align="middle">
         <Space>
           <h2 className="mb-0">Transform to UTC Time:</h2>
-          <Switch
-            checked={config.utcTime}
-            onChange={onUtcChange}
-            checkedChildren="Yes"
-            unCheckedChildren="No"
-          />
+          <Switch checked={config.utcTime} onChange={onUtcChange} checkedChildren="Yes" unCheckedChildren="No" />
         </Space>
       </Row>
       <label htmlFor="utcSwitch">
-        {config.utcTime
-          ? "Displaying all datetime with UTC format"
-          : "Displaying all datetime in local timezone"}
+        {config.utcTime ? 'Displaying all datetime with UTC format' : 'Displaying all datetime in local timezone'}
       </label>
       <Divider />
       <div>
         <h2 className="mb-1">Networks:</h2>
         <div>
-          Currently Selected is{" "}
-          <span className="highlight-endpoint">
-            {config.selectedNetwork?.networkName}
-          </span>
+          Currently Selected is <span className="highlight-endpoint">{config.selectedNetwork?.networkName}</span>
         </div>
         <Row className="my-3">
-          <Button
-            className="add-network-button"
-            type="default"
-            onClick={handleAddNetwork}
-            icon={<PlusOutlined />}
-          >
+          <Button className="add-network-button" type="default" onClick={handleAddNetwork} icon={<PlusOutlined />}>
             Add network
           </Button>
           <Popconfirm
@@ -302,11 +248,7 @@ function Configuration(): React.ReactElement {
             okText="Reset"
             okType="danger"
           >
-            <Button
-              className="add-network-button"
-              type="default"
-              icon={<UndoOutlined />}
-            >
+            <Button className="add-network-button" type="default" icon={<UndoOutlined />}>
               Reset Config
             </Button>
           </Popconfirm>
@@ -319,10 +261,7 @@ function Configuration(): React.ReactElement {
           rowKey="networkName"
         />
       </div>
-      <AddNetworkModal
-        showModal={showAddNetworkModal}
-        setShowModal={setShowAddNetworkModal}
-      />
+      <AddNetworkModal showModal={showAddNetworkModal} setShowModal={setShowAddNetworkModal} />
       <AddEndpointModal
         showModal={showAddEndpointModal}
         setShowModal={setShowAddEndpointModal}

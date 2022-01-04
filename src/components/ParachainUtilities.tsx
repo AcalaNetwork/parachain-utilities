@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from "react"
-import { Layout, message, Spin } from "antd"
-import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom"
-import { createWsEndpoints } from "@polkadot/apps-config"
-import NavbarComponent from "./Navbar/Navbar"
-import CustomSpinner from "./utils/CustomSpinner"
-import AddressBook from "./AddressBook/AddressBook"
-import Configuration from "./Config/Configuration"
-import AverageBlockTime from "./AverageBlockTime/AverageBlockTime"
-import BlockTime from "./BlockTime/BlockTime"
-import BlockAuthor from "./BlockAuthor/BlockAuthor"
-import { useAppDispatch, useAppSelector } from "../store/hooks"
-import { replaceText } from "../utils/UtilsFunctions"
-import { selectNetwork, setNetworkList } from "../store/actions/configActions"
-import { PolkadotNetwork } from "../types"
-import "./ParachainUtilities.less"
+import React, { useEffect, useState } from 'react'
+import { Layout, message, Spin } from 'antd'
+import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom'
+import { createWsEndpoints } from '@polkadot/apps-config'
+import NavbarComponent from './Navbar/Navbar'
+import CustomSpinner from './utils/CustomSpinner'
+import AddressBook from './AddressBook/AddressBook'
+import Configuration from './Config/Configuration'
+import AverageBlockTime from './AverageBlockTime/AverageBlockTime'
+import BlockTime from './BlockTime/BlockTime'
+import BlockAuthor from './BlockAuthor/BlockAuthor'
+import { useAppDispatch, useAppSelector } from '../store/hooks'
+import { replaceText } from '../utils/UtilsFunctions'
+import { selectNetwork, setNetworkList } from '../store/actions/configActions'
+import { PolkadotNetwork } from '../types'
+import './ParachainUtilities.less'
 
 function ParachainUtilities(): React.ReactElement {
   const [isLoading, setIsLoading] = useState(false)
@@ -37,11 +37,7 @@ function ParachainUtilities(): React.ReactElement {
         const externalList = createWsEndpoints(replaceText)
         for (const auxEndpoint of externalList) {
           const networkName = auxEndpoint.text as string
-          if (
-            auxEndpoint.value &&
-            !auxEndpoint.isLightClient &&
-            !auxEndpoint.isUnreachable
-          ) {
+          if (auxEndpoint.value && !auxEndpoint.isLightClient && !auxEndpoint.isUnreachable) {
             if (networksMap[networkName]) {
               networksMap[networkName].endpoints.push({
                 value: auxEndpoint.value,
@@ -64,7 +60,7 @@ function ParachainUtilities(): React.ReactElement {
           }
         }
 
-        const defaultNetworks = ["Polkadot", "Kusama", "Acala", "Karura"]
+        const defaultNetworks = ['Polkadot', 'Kusama', 'Acala', 'Karura']
 
         // Enable some default networks
         for (const network of defaultNetworks) {
@@ -84,16 +80,11 @@ function ParachainUtilities(): React.ReactElement {
       }
       // If no endpoint is selected, set the first enabled endpoint as selected
       if (!config.selectedNetwork) {
-        dispatch(
-          selectNetwork(
-            config.networks?.find((auxEndpoint) => auxEndpoint.enabled) ||
-              newNetworks[0]
-          )
-        )
+        dispatch(selectNetwork(config.networks?.find((auxEndpoint) => auxEndpoint.enabled) || newNetworks[0]))
       }
     } catch (err) {
       console.log(err)
-      message.error("An error ocurred when trying to load default networks")
+      message.error('An error ocurred when trying to load default networks')
     }
   }
 
@@ -105,11 +96,7 @@ function ParachainUtilities(): React.ReactElement {
           <Layout.Content className="app-content">
             <Switch>
               <Route exact path="/address-book" component={AddressBook} />
-              <Route
-                exact
-                path="/average-block-time"
-                component={AverageBlockTime}
-              />
+              <Route exact path="/average-block-time" component={AverageBlockTime} />
               <Route exact path="/block-time" component={BlockTime} />
               <Route exact path="/block-author" component={BlockAuthor} />
               <Route exact path="/config" component={Configuration} />

@@ -1,8 +1,8 @@
-import { ApiPromise, WsProvider } from "@polkadot/api"
-import { Button, Form, Input, Modal, Row, Space, message, Spin } from "antd"
-import React, { useEffect, useState } from "react"
-import { addNetwork } from "../../store/actions/configActions"
-import { useAppDispatch, useAppSelector } from "../../store/hooks"
+import { ApiPromise, WsProvider } from '@polkadot/api'
+import { Button, Form, Input, Modal, Row, Space, message, Spin } from 'antd'
+import React, { useEffect, useState } from 'react'
+import { addNetwork } from '../../store/actions/configActions'
+import { useAppDispatch, useAppSelector } from '../../store/hooks'
 
 type AddNetworkModalProps = {
   showModal: boolean
@@ -12,7 +12,7 @@ type AddNetworkModalProps = {
 function AddNetworkModal(props: AddNetworkModalProps): React.ReactElement {
   const [form] = Form.useForm()
   const dispatch = useAppDispatch()
-  const networks = useAppSelector(state => state.config.networks)
+  const networks = useAppSelector((state) => state.config.networks)
   const [isLoading, setIsLoading] = useState(false)
   const { showModal, setShowModal } = props
   useEffect(() => {
@@ -23,20 +23,16 @@ function AddNetworkModal(props: AddNetworkModalProps): React.ReactElement {
     try {
       setIsLoading(true)
       const trimmedValue = formValues.networkName.trim()
-      const checkExisting = networks.find(
-        auxNetwork => auxNetwork.networkName === trimmedValue
-      )
+      const checkExisting = networks.find((auxNetwork) => auxNetwork.networkName === trimmedValue)
       if (checkExisting) {
-        message.error(
-          `Network with name ${checkExisting.networkName} already exists`
-        )
+        message.error(`Network with name ${checkExisting.networkName} already exists`)
         setIsLoading(false)
         return
       }
 
       const trimmedUrl = formValues.urlValue
       const provider = new WsProvider(trimmedUrl)
-      provider.on("error", () => {
+      provider.on('error', () => {
         provider.disconnect()
         message.error("Error: Couldn't connect to endpoint")
         setIsLoading(false)
@@ -73,54 +69,59 @@ function AddNetworkModal(props: AddNetworkModalProps): React.ReactElement {
 
   return (
     <Modal
-      className='add-network-modal'
+      className="add-network-modal"
       visible={showModal}
-      title='Add Network'
-      okText='Add'
+      title="Add Network"
+      okText="Add"
       onCancel={handleClose}
-      footer={null}>
+      footer={null}
+    >
       <Spin spinning={isLoading}>
         <Form
-          layout='vertical'
-          name='add-network-form'
+          layout="vertical"
+          name="add-network-form"
           form={form}
           initialValues={{
-            networkName: "",
+            networkName: '',
           }}
-          onFinish={onFormSubmit}>
+          onFinish={onFormSubmit}
+        >
           <Form.Item
-            label='Network Name'
-            name='networkName'
+            label="Network Name"
+            name="networkName"
             rules={[
               {
                 required: true,
-                message: "Please enter the network name",
+                message: 'Please enter the network name',
               },
-            ]}>
-            <Input placeholder='Enter network name...' />
+            ]}
+          >
+            <Input placeholder="Enter network name..." />
           </Form.Item>
           <Form.Item
-            label='Endpoint URL'
-            name='urlValue'
+            label="Endpoint URL"
+            name="urlValue"
             rules={[
               {
                 required: true,
-                message: "Please enter the URL",
+                message: 'Please enter the URL',
               },
-            ]}>
-            <Input type='url' placeholder='Enter endpoint...' />
+            ]}
+          >
+            <Input type="url" placeholder="Enter endpoint..." />
           </Form.Item>
-          <Form.Item className='mb-0'>
-            <Row justify='end'>
+          <Form.Item className="mb-0">
+            <Row justify="end">
               <Space>
                 <Button
-                  htmlType='button'
+                  htmlType="button"
                   onClick={() => {
                     handleClose()
-                  }}>
+                  }}
+                >
                   Cancel
                 </Button>
-                <Button type='primary' htmlType='submit'>
+                <Button type="primary" htmlType="submit">
                   Add
                 </Button>
               </Space>

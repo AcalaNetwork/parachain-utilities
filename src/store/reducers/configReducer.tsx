@@ -1,5 +1,5 @@
-import { AnyAction } from "redux"
-import { ConfigState } from "../../types"
+import { AnyAction } from 'redux'
+import { ConfigState } from '../../types'
 import {
   SET_CONFIG,
   SET_NETWORK_LIST,
@@ -12,17 +12,14 @@ import {
   DELETE_ENDPOINT,
   TOGGLE_ENDPOINT,
   RESET_CONFIG,
-} from "../actions/configActions"
+} from '../actions/configActions'
 
 const initialState: ConfigState = {
   networks: [],
   utcTime: false,
 }
 
-const configReducer = (
-  state = initialState,
-  action: AnyAction
-): ConfigState => {
+const configReducer = (state = initialState, action: AnyAction): ConfigState => {
   switch (action.type) {
     case SET_CONFIG:
       return {
@@ -47,9 +44,7 @@ const configReducer = (
     case DELETE_NETWORK:
       return {
         ...state,
-        networks: state.networks.filter(
-          auxNetwork => auxNetwork.networkName !== action.payload
-        ),
+        networks: state.networks.filter((auxNetwork) => auxNetwork.networkName !== action.payload),
       }
     case SELECT_NETWORK:
       return {
@@ -59,7 +54,7 @@ const configReducer = (
     case TOGGLE_NETWORK:
       return {
         ...state,
-        networks: state.networks.map(auxNetwork => {
+        networks: state.networks.map((auxNetwork) => {
           if (auxNetwork.networkName === action.payload) {
             return {
               ...auxNetwork,
@@ -72,7 +67,7 @@ const configReducer = (
     case ADD_ENDPOINT:
       return {
         ...state,
-        networks: state.networks.map(auxNetwork => {
+        networks: state.networks.map((auxNetwork) => {
           if (auxNetwork.networkName === action.payload.networkName) {
             return {
               ...auxNetwork,
@@ -85,13 +80,12 @@ const configReducer = (
     case DELETE_ENDPOINT:
       return {
         ...state,
-        networks: state.networks.map(auxNetwork => {
+        networks: state.networks.map((auxNetwork) => {
           if (auxNetwork.networkName === action.payload.networkName) {
             return {
               ...auxNetwork,
               endpoints: auxNetwork.endpoints.filter(
-                auxEndpoint =>
-                  auxEndpoint.value !== action.payload.endpointValue
+                (auxEndpoint) => auxEndpoint.value !== action.payload.endpointValue
               ),
             }
           }
@@ -101,11 +95,11 @@ const configReducer = (
     case TOGGLE_ENDPOINT:
       return {
         ...state,
-        networks: state.networks.map(auxNetwork => {
+        networks: state.networks.map((auxNetwork) => {
           if (auxNetwork.networkName === action.payload.networkName) {
             return {
               ...auxNetwork,
-              endpoints: auxNetwork.endpoints.map(auxEndpoint => {
+              endpoints: auxNetwork.endpoints.map((auxEndpoint) => {
                 if (auxEndpoint.value === action.payload.endpointValue) {
                   return {
                     ...auxEndpoint,
@@ -120,10 +114,10 @@ const configReducer = (
         }),
       }
     case RESET_CONFIG:
-        return {
-          ...state,
-          networks: [],
-        }
+      return {
+        ...state,
+        networks: [],
+      }
     default:
       return state
   }

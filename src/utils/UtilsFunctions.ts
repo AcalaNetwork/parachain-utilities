@@ -1,9 +1,9 @@
-import moment, { Moment } from "moment"
-import { encodeAddress } from "@polkadot/util-crypto/address"
-import { BN, BN_THOUSAND, BN_TWO } from "@polkadot/util"
-import { SubstrateAddress, TransformedSubstrateAddress } from "../types"
-import * as prefixes from "../utils/ss58-registry.json"
-import { ApiPromise } from "@polkadot/api"
+import moment, { Moment } from 'moment'
+import { encodeAddress } from '@polkadot/util-crypto/address'
+import { BN, BN_THOUSAND, BN_TWO } from '@polkadot/util'
+import { SubstrateAddress, TransformedSubstrateAddress } from '../types'
+import * as prefixes from '../utils/ss58-registry.json'
+import { ApiPromise } from '@polkadot/api'
 
 export const replaceText = (
   key: string,
@@ -20,10 +20,7 @@ export const replaceText = (
   return value || key
 }
 
-export const transformDate = (
-  unixTimestamp: number,
-  transformUtc: boolean
-): Moment => {
+export const transformDate = (unixTimestamp: number, transformUtc: boolean): Moment => {
   let auxMoment
   if (transformUtc) {
     auxMoment = moment.utc(unixTimestamp)
@@ -33,19 +30,12 @@ export const transformDate = (
   return auxMoment
 }
 
-export const formatDate = (
-  unixTimestamp: number,
-  transformUtc: boolean,
-  format = "YYYY-MM-DD HH:mm:ss"
-): string => {
+export const formatDate = (unixTimestamp: number, transformUtc: boolean, format = 'YYYY-MM-DD HH:mm:ss'): string => {
   return transformDate(unixTimestamp, transformUtc).format(format)
 }
 
-export const toUnixTimestamp = (
-  dateTime: Moment,
-  transformUtc: boolean
-): number => {
-  const simpleDateTime = dateTime.format("YYYY-MM-DD HH:mm:ss")
+export const toUnixTimestamp = (dateTime: Moment, transformUtc: boolean): number => {
+  const simpleDateTime = dateTime.format('YYYY-MM-DD HH:mm:ss')
   let timestamp
   if (transformUtc) {
     timestamp = moment.utc(simpleDateTime)
@@ -55,10 +45,8 @@ export const toUnixTimestamp = (
   return timestamp.valueOf()
 }
 
-export const transformAddress = (
-  key: string
-): TransformedSubstrateAddress[] => {
-  const publicKey = Uint8Array.from(Buffer.from(key.substring(2), "hex"))
+export const transformAddress = (key: string): TransformedSubstrateAddress[] => {
+  const publicKey = Uint8Array.from(Buffer.from(key.substring(2), 'hex'))
   const newFormats: TransformedSubstrateAddress[] = []
   for (const auxPrefix of prefixes.registry) {
     if (auxPrefix.prefix !== 46 && auxPrefix.prefix !== 47) {
@@ -71,10 +59,7 @@ export const transformAddress = (
   return newFormats
 }
 
-export const findAuthorName = (
-  savedAddresses: SubstrateAddress[],
-  address: string
-): string | undefined => {
+export const findAuthorName = (savedAddresses: SubstrateAddress[], address: string): string | undefined => {
   for (const auxAddress of savedAddresses) {
     for (const auxTransformed of auxAddress.transformed) {
       if (auxTransformed.value === address) {
@@ -95,16 +80,13 @@ export const estimateStartBlockNumber = (
 ): number => {
   const auxMoment = moment()
   const currentUnix = auxMoment.valueOf()
-  hours && auxMoment.subtract(hours, "hours")
-  days && auxMoment.subtract(days, "days")
-  weeks && auxMoment.subtract(weeks, "weeks")
-  months && auxMoment.subtract(months, "months")
+  hours && auxMoment.subtract(hours, 'hours')
+  days && auxMoment.subtract(days, 'days')
+  weeks && auxMoment.subtract(weeks, 'weeks')
+  months && auxMoment.subtract(months, 'months')
   const estimatedUnix = auxMoment.valueOf()
 
-  return Math.max(
-    1,
-    endBlockNumber - (currentUnix - estimatedUnix) / estimatedBlockTime
-  )
+  return Math.max(1, endBlockNumber - (currentUnix - estimatedUnix) / estimatedBlockTime)
 }
 
 const EXPECTED_TIME_THRESHOLD = BN_THOUSAND.div(BN_TWO)

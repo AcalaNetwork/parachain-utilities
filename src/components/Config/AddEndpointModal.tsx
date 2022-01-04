@@ -1,10 +1,10 @@
-import { ApiPromise, WsProvider } from "@polkadot/api"
-import { Button, Form, Input, Modal, Row, Space, message, Spin } from "antd"
-import React, { useContext, useEffect, useState } from "react"
-import { addEndpoint } from "../../store/actions/configActions"
-import { useAppDispatch, useAppSelector } from "../../store/hooks"
-import { RPCEndpoint } from "../../types"
-import { ApiContext, ApiContextData } from "../utils/ApiProvider"
+import { ApiPromise, WsProvider } from '@polkadot/api'
+import { Button, Form, Input, Modal, Row, Space, message, Spin } from 'antd'
+import React, { useContext, useEffect, useState } from 'react'
+import { addEndpoint } from '../../store/actions/configActions'
+import { useAppDispatch, useAppSelector } from '../../store/hooks'
+import { RPCEndpoint } from '../../types'
+import { ApiContext, ApiContextData } from '../utils/ApiProvider'
 
 type AddEndpointModalProps = {
   showModal: boolean
@@ -16,7 +16,7 @@ function AddEndpointModal(props: AddEndpointModalProps): React.ReactElement {
   const { deleteNetworkConnection } = useContext<ApiContextData>(ApiContext)
   const [form] = Form.useForm()
   const dispatch = useAppDispatch()
-  const networks = useAppSelector(state => state.config.networks)
+  const networks = useAppSelector((state) => state.config.networks)
   const [isLoading, setIsLoading] = useState(false)
   const { showModal, setShowModal, chosenNetwork } = props
 
@@ -29,23 +29,21 @@ function AddEndpointModal(props: AddEndpointModalProps): React.ReactElement {
       setIsLoading(true)
       const trimmedValue = rpcEndpoint.value.trim()
       const checkExisting = networks
-        .find(auxNetwork => auxNetwork.networkName === chosenNetwork)
-        ?.endpoints.find(auxEndpoint => auxEndpoint.value === trimmedValue)
+        .find((auxNetwork) => auxNetwork.networkName === chosenNetwork)
+        ?.endpoints.find((auxEndpoint) => auxEndpoint.value === trimmedValue)
       if (checkExisting) {
-        message.error(
-          `Endpoint ${checkExisting.value} already exists in network ${chosenNetwork}`
-        )
+        message.error(`Endpoint ${checkExisting.value} already exists in network ${chosenNetwork}`)
         setIsLoading(false)
         return
       }
 
       const provider = new WsProvider(trimmedValue)
-      provider.on("error", () => {
+      provider.on('error', () => {
         provider.disconnect()
         message.error("Error: Couldn't connect to endpoint")
         setIsLoading(false)
       })
-      await ApiPromise.create({ provider })      
+      await ApiPromise.create({ provider })
       // const chainName = (await api.rpc.system.chain()).toString()
       provider.disconnect()
       dispatch(
@@ -58,7 +56,7 @@ function AddEndpointModal(props: AddEndpointModalProps): React.ReactElement {
       deleteNetworkConnection(chosenNetwork)
       handleClose()
     } catch (err) {
-      message.error("Error: Invalid endpoint URL")
+      message.error('Error: Invalid endpoint URL')
       setIsLoading(false)
     }
   }
@@ -70,43 +68,47 @@ function AddEndpointModal(props: AddEndpointModalProps): React.ReactElement {
 
   return (
     <Modal
-      className='add-endpoint-modal'
+      className="add-endpoint-modal"
       visible={showModal}
-      title='Add RPC endpoint'
-      okText='Add'
+      title="Add RPC endpoint"
+      okText="Add"
       onCancel={handleClose}
-      footer={null}>
+      footer={null}
+    >
       <Spin spinning={isLoading}>
         <Form
-          layout='vertical'
-          name='add-endpoint-form'
+          layout="vertical"
+          name="add-endpoint-form"
           form={form}
           initialValues={{
-            value: "",
+            value: '',
           }}
-          onFinish={onFormSubmit}>
+          onFinish={onFormSubmit}
+        >
           <Form.Item
-            label='URL'
-            name='value'
+            label="URL"
+            name="value"
             rules={[
               {
                 required: true,
-                message: "Please enter the URL",
+                message: 'Please enter the URL',
               },
-            ]}>
-            <Input type='url' placeholder='Enter endpoint...' />
+            ]}
+          >
+            <Input type="url" placeholder="Enter endpoint..." />
           </Form.Item>
-          <Form.Item className='mb-0'>
-            <Row justify='end'>
+          <Form.Item className="mb-0">
+            <Row justify="end">
               <Space>
                 <Button
-                  htmlType='button'
+                  htmlType="button"
                   onClick={() => {
                     handleClose()
-                  }}>
+                  }}
+                >
                   Cancel
                 </Button>
-                <Button type='primary' htmlType='submit'>
+                <Button type="primary" htmlType="submit">
                   Add
                 </Button>
               </Space>

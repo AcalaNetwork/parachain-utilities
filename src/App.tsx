@@ -1,10 +1,10 @@
-import React from "react"
-import "./App.less"
-import { Provider } from "react-redux"
-import setupStore from "./store"
-import { PersistGate } from "redux-persist/integration/react"
-import ParachainUtilities from "./components/ParachainUtilities"
-import { ApiProvider } from "./components/utils/ApiProvider"
+import React from 'react'
+import './App.less'
+import { Provider } from 'react-redux'
+import setupStore from './store'
+import { PersistGate } from 'redux-persist/integration/react'
+import ParachainUtilities from './components/ParachainUtilities'
+import { ApiProvider } from './components/utils/ApiProvider'
 
 const { store, persistor } = setupStore()
 

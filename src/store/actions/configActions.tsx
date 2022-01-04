@@ -1,17 +1,17 @@
-import { AnyAction } from "redux"
-import { ConfigState, PolkadotNetwork, RPCEndpoint } from "../../types"
+import { AnyAction } from 'redux'
+import { ConfigState, PolkadotNetwork, RPCEndpoint } from '../../types'
 
-export const SET_CONFIG = "SET_CONFIG"
-export const SET_NETWORK_LIST = "SET_NETWORK_LIST"
-export const SET_UTC_TIME = "SET_UTC_TIME"
-export const ADD_NETWORK = "ADD_NETWORK"
-export const DELETE_NETWORK = "DELETE_NETWORK"
-export const SELECT_NETWORK = "SELECT_NETWORK"
-export const TOGGLE_NETWORK = "TOGGLE_NETWORK"
-export const ADD_ENDPOINT = "ADD_ENDPOINT"
-export const DELETE_ENDPOINT = "DELETE_ENDPOINT"
-export const TOGGLE_ENDPOINT = "TOGGLE_ENDPOINT"
-export const RESET_CONFIG = "RESET_CONFIG"
+export const SET_CONFIG = 'SET_CONFIG'
+export const SET_NETWORK_LIST = 'SET_NETWORK_LIST'
+export const SET_UTC_TIME = 'SET_UTC_TIME'
+export const ADD_NETWORK = 'ADD_NETWORK'
+export const DELETE_NETWORK = 'DELETE_NETWORK'
+export const SELECT_NETWORK = 'SELECT_NETWORK'
+export const TOGGLE_NETWORK = 'TOGGLE_NETWORK'
+export const ADD_ENDPOINT = 'ADD_ENDPOINT'
+export const DELETE_ENDPOINT = 'DELETE_ENDPOINT'
+export const TOGGLE_ENDPOINT = 'TOGGLE_ENDPOINT'
+export const RESET_CONFIG = 'RESET_CONFIG'
 
 export const setConfig = (config: ConfigState): AnyAction => {
   return {
@@ -62,10 +62,7 @@ export const toggleNetwork = (networkName: string): AnyAction => {
   }
 }
 
-export const addEndpoint = (
-  networkName: string,
-  endpoint: RPCEndpoint
-): AnyAction => {
+export const addEndpoint = (networkName: string, endpoint: RPCEndpoint): AnyAction => {
   return {
     type: ADD_ENDPOINT,
     payload: {
@@ -75,10 +72,7 @@ export const addEndpoint = (
   }
 }
 
-export const deleteEndpoint = (
-  networkName: string,
-  endpointValue: string
-): AnyAction => {
+export const deleteEndpoint = (networkName: string, endpointValue: string): AnyAction => {
   return {
     type: DELETE_ENDPOINT,
     payload: {
@@ -88,10 +82,7 @@ export const deleteEndpoint = (
   }
 }
 
-export const toggleEndpoint = (
-  networkName: string,
-  endpointValue: string
-): AnyAction => {
+export const toggleEndpoint = (networkName: string, endpointValue: string): AnyAction => {
   return {
     type: TOGGLE_ENDPOINT,
     payload: {
