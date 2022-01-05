@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Layout, message, Spin } from 'antd'
 import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom'
 import { createWsEndpoints } from '@polkadot/apps-config'
+import { TFunction } from 'i18next'
 import NavbarComponent from './Navbar/Navbar'
 import CustomSpinner from './utils/CustomSpinner'
 import AddressBook from './AddressBook/AddressBook'
@@ -34,7 +35,7 @@ function ParachainUtilities(): React.ReactElement {
       // If config has no endpoint, load default configuration
       if (!config.networks || config.networks.length === 0) {
         const networksMap: Record<string, PolkadotNetwork> = {}
-        const externalList = createWsEndpoints(replaceText)
+        const externalList = createWsEndpoints(replaceText as TFunction)
         for (const auxEndpoint of externalList) {
           const networkName = auxEndpoint.text as string
           if (auxEndpoint.value && !auxEndpoint.isLightClient && !auxEndpoint.isUnreachable) {

@@ -1,6 +1,7 @@
 import { BarChartOutlined } from '@ant-design/icons'
 import { Button, Col, Form, InputNumber, message, Row, Select, Space, Spin, Table } from 'antd'
 import React, { useContext, useEffect, useState } from 'react'
+import { Header } from '@polkadot/types/interfaces/runtime'
 import { useAppSelector } from '../../store/hooks'
 import { PolkadotNetwork } from '../../types'
 import { estimateStartBlockNumber, formatDate, getExpectedBlockTime } from '../../utils/UtilsFunctions'
@@ -50,7 +51,7 @@ function AverageBlockTime(): React.ReactElement {
       const timeMs = getExpectedBlockTime(auxApi)
 
       // Get current block number
-      const latestBlock = await auxApi.rpc.chain.getHeader()
+      const latestBlock: Header = await auxApi.rpc.chain.getHeader()
       const currentBlockNumber = latestBlock.number.toNumber()
 
       if (timeMs && (overwriteValues || !formBlocks.getFieldValue('expectedBlockTime'))) {
@@ -144,20 +145,23 @@ function AverageBlockTime(): React.ReactElement {
         auxApi.rpc.chain.getBlockHash(startBlock),
         auxApi.rpc.chain.getBlockHash(endBlock),
       ])
-      const [startBlockTime, endBlockTime] = await Promise.all([
+      const [startBlockTimeResponse, endBlockTimeResponse] = await Promise.all([
         auxApi.query.timestamp.now.at(startBlockHash),
         auxApi.query.timestamp.now.at(endBlockHash),
       ])
 
-      const timePassed = endBlockTime.toNumber() - startBlockTime.toNumber()
+      const startBlockTime = Number(startBlockTimeResponse.toString())
+      const endBlockTime = Number(endBlockTimeResponse.toString())
+
+      const timePassed = endBlockTime - startBlockTime
       const avgBlockTime = timePassed / (endBlock - startBlock) / 1000
       setResults((oldValue) => [
         {
           index: oldValue.length,
           startBlock,
-          startBlockTime: formatDate(startBlockTime.toNumber(), config.utcTime),
+          startBlockTime: formatDate(startBlockTime, config.utcTime),
           endBlock,
-          endBlockTime: formatDate(endBlockTime.toNumber(), config.utcTime),
+          endBlockTime: formatDate(endBlockTime, config.utcTime),
           chain,
           avgBlockTime,
         },
