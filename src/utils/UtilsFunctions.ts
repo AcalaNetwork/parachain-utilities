@@ -95,21 +95,21 @@ const EXPECTED_TIME_DEFAULT = new BN(6_000)
 
 export const getExpectedBlockTime = (api: ApiPromise): number => {
   // https://github.com/polkadot-js/apps/blob/8ef4ed18dd281adfef3ce9e8f0bede8a82e62ec9/packages/react-hooks/src/useBlockTime.ts#L26
-  return (
+  return Number(
     // Babe
     (
       api.consts.babe?.expectedBlockTime ||
       // POW, eg. Kulupu
       api.consts.difficulty?.targetBlockTime ||
       // Check against threshold to determine value validity
-      (api.consts.timestamp?.minimumPeriod.gte(EXPECTED_TIME_THRESHOLD)
+      ((api.consts.timestamp?.minimumPeriod as unknown as BN).gte(EXPECTED_TIME_THRESHOLD)
         ? // Default minimum period config
-          api.consts.timestamp.minimumPeriod.mul(BN_TWO)
+          (api.consts.timestamp.minimumPeriod as unknown as BN).mul(BN_TWO)
         : api.query.parachainSystem
         ? // default guess for a parachain
           EXPECTED_TIME_DEFAULT.mul(BN_TWO)
         : // default guess for others
           EXPECTED_TIME_DEFAULT)
-    ).toNumber()
+    ).toString()
   )
 }

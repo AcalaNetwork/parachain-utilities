@@ -1,6 +1,8 @@
 import { BarChartOutlined, CaretRightOutlined } from '@ant-design/icons'
 import { Button, Col, Collapse, Form, InputNumber, List, message, Row, Select, Space, Spin, Table } from 'antd'
 import React, { useContext, useEffect, useState } from 'react'
+import { Header } from '@polkadot/types/interfaces/runtime'
+import { BlockHash } from '@polkadot/types/interfaces/chain'
 import { useAppSelector } from '../../store/hooks'
 import { PolkadotNetwork } from '../../types'
 import { estimateStartBlockNumber, findAuthorName, getExpectedBlockTime } from '../../utils/UtilsFunctions'
@@ -52,7 +54,7 @@ function BlockAuthor(): React.ReactElement {
       const timeMs = getExpectedBlockTime(auxApi)
 
       // Get current block number
-      const latestBlock = await auxApi.rpc.chain.getHeader()
+      const latestBlock: Header = await auxApi.rpc.chain.getHeader()
       const currentBlockNumber = latestBlock.number.toNumber()
 
       if (timeMs && (overwriteValues || !formBlocks.getFieldValue('expectedBlockTime'))) {
@@ -153,7 +155,7 @@ function BlockAuthor(): React.ReactElement {
           promises.push(auxApi.rpc.chain.getBlockHash(loadedUntil + promiseCount))
           promiseCount += 1
         }
-        const newHashes = await Promise.all(promises)
+        const newHashes: BlockHash[] = await Promise.all(promises)
         promises = []
         for (const hash of newHashes) {
           promises.push(auxApi.derive.chain.getHeader(hash))
@@ -166,7 +168,7 @@ function BlockAuthor(): React.ReactElement {
               ...(groupedBlocks[author] || []),
               {
                 number: loadedUntil + index,
-                hash: newHashes[index].toString(),
+                hash: newHashes[index]?.toString(),
               },
             ]
           }

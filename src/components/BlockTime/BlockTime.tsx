@@ -1,5 +1,7 @@
 import { BarChartOutlined } from '@ant-design/icons'
 import { ApiPromise } from '@polkadot/api'
+import { Header } from '@polkadot/types/interfaces/runtime'
+import { BlockHash } from '@polkadot/types/interfaces/chain'
 import { Button, Col, DatePicker, Form, InputNumber, message, Row, Space, Spin, Table } from 'antd'
 import { Moment } from 'moment'
 import React, { useContext, useEffect, useState } from 'react'
@@ -143,7 +145,7 @@ function BlockTime(): React.ReactElement {
         const api = await connectToApi(apiConnections, apiStatus, selectedNetworks[index])
 
         // Get current block number
-        const latestBlock = await api.rpc.chain.getHeader()
+        const latestBlock: Header = await api.rpc.chain.getHeader()
         const currentBlockNumber = latestBlock.number.toNumber()
 
         let formattedResult = ''
@@ -152,9 +154,9 @@ function BlockTime(): React.ReactElement {
 
         // If it is future, estimate the date time
         if (blockNumber > currentBlockNumber) {
-          const currentHash = await api.rpc.chain.getBlockHash(currentBlockNumber)
+          const currentHash: BlockHash = await api.rpc.chain.getBlockHash(currentBlockNumber)
           const currentTime = await api.query.timestamp.now.at(currentHash)
-          const estimatedTime = currentTime.toNumber() + expectedBlockTimes[index] * blocksDifference
+          const estimatedTime = Number(currentTime.toString()) + expectedBlockTimes[index] * blocksDifference
           formattedResult = formatDate(estimatedTime, config.utcTime)
           type = 'Future'
 
@@ -162,7 +164,7 @@ function BlockTime(): React.ReactElement {
         } else {
           const pastHash = await api.rpc.chain.getBlockHash(blockNumber)
           const pastTime = await api.query.timestamp.now.at(pastHash)
-          formattedResult = formatDate(pastTime.toNumber(), config.utcTime)
+          formattedResult = formatDate(Number(pastTime.toString()), config.utcTime)
           type = 'Past'
         }
 
@@ -194,10 +196,10 @@ function BlockTime(): React.ReactElement {
         const api = await connectToApi(apiConnections, apiStatus, selectedNetworks[index])
 
         // Get current block number
-        const latestBlock = await api.rpc.chain.getHeader()
+        const latestBlock: Header = await api.rpc.chain.getHeader()
         const currentBlockNumber = latestBlock.number.toNumber()
         const currentHash = await api.rpc.chain.getBlockHash(currentBlockNumber)
-        const currentTime = (await api.query.timestamp.now.at(currentHash)).toNumber()
+        const currentTime = Number((await api.query.timestamp.now.at(currentHash)).toString())
 
         let result: number
         let type = ''
@@ -256,7 +258,7 @@ function BlockTime(): React.ReactElement {
 
     // Get timestamp at first block (block 1)
     const firstBlockHash = await api.rpc.chain.getBlockHash(1)
-    const firstBlockTime = (await api.query.timestamp.now.at(firstBlockHash)).toNumber()
+    const firstBlockTime = Number((await api.query.timestamp.now.at(firstBlockHash)).toString())
 
     // Handle special cases
     if (targetTime <= firstBlockTime) {
@@ -293,7 +295,7 @@ function BlockTime(): React.ReactElement {
       }
       // Load search block time
       const searchBlockHash = await api.rpc.chain.getBlockHash(searchBlockNumber)
-      const searchBlockTime = (await api.query.timestamp.now.at(searchBlockHash)).toNumber()
+      const searchBlockTime = Number((await api.query.timestamp.now.at(searchBlockHash)).toString())
 
       // If we found the block, return the value
       if (searchBlockTime === targetTime) return searchBlockNumber
