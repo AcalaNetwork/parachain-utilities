@@ -35,7 +35,7 @@ function ParachainUtilities(): React.ReactElement {
       let newNetworks: PolkadotNetwork[] = []
       let parentNetworkName
       // If config has no endpoint, load default configuration
-      if (!config.networks || config.networks.length === 0 || !config.networks[2].paraId) {
+      if (!config.networks || config.networks.length === 0 || !config.networks.find(auxNetwork => !!auxNetwork.paraId)) {
         const networksMap: Record<string, PolkadotNetwork> = {}
         const externalList = createWsEndpoints(replaceText as TFunction)
         for (const auxEndpoint of externalList) {
