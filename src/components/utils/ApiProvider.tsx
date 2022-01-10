@@ -53,6 +53,7 @@ export const connectToApi = async (
       apiStatus[network.networkName] = false
     })
 
+    await api.isReady
     apiConnections[network.networkName] = api
     apiStatus[network.networkName] = true
     return api

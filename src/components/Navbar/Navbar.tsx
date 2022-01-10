@@ -36,6 +36,9 @@ function NavbarComponent(): React.ReactElement {
               <Link to="/block-author">Block Author</Link>
             </Menu.Item>
             <Menu.Item key="5">
+              <Link to="/xcm">XCM</Link>
+            </Menu.Item>
+            <Menu.Item key="6">
               <Link to="/config">Config</Link>
             </Menu.Item>
           </Menu>

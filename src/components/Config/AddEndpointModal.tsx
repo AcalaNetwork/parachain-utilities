@@ -43,7 +43,8 @@ function AddEndpointModal(props: AddEndpointModalProps): React.ReactElement {
         message.error("Error: Couldn't connect to endpoint")
         setIsLoading(false)
       })
-      await ApiPromise.create({ provider })
+      const api = await ApiPromise.create({ provider })
+      await api.isReady
       // const chainName = (await api.rpc.system.chain()).toString()
       provider.disconnect()
       dispatch(
