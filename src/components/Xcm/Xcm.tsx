@@ -74,7 +74,7 @@ function Xcm(): React.ReactElement {
 
       if (upwardMessage.length > 0) {
         setMessageType('Upward message')
-        setMessageSent(Buffer.from(upwardMessage[0].slice(2), 'hex').toString())
+        setMessageSent(parseXcmMessage(upwardMessage[0]))
 
         await loadUpwardMessageEvents(senderApi, senderBlockHash, auxParentNetwork)
 
@@ -90,7 +90,7 @@ function Xcm(): React.ReactElement {
       if (horizontalMessage.length > 0) {
         const horizontalMessageHex = horizontalMessage[0].data as string
         setMessageType('Horizontal message')
-        setMessageSent(Buffer.from(horizontalMessageHex.slice(2), 'hex').toString())
+        setMessageSent(parseXcmMessage(horizontalMessageHex))
 
         await loadHorizontalMessageEvents(
           auxSenderNetwork,
@@ -290,6 +290,10 @@ function Xcm(): React.ReactElement {
     const newEvents = extractEventsFromBlock(auxBlockRecords, [['system', 'ExtrinsicSuccess']])
 
     setResults(newEvents)
+  }
+
+  const parseXcmMessage = (encoded: string) => {
+    return Buffer.from(encoded.slice(2), 'hex').toString()
   }
 
   const extractEventsFromBlock = (
