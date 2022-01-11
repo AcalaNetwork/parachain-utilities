@@ -422,7 +422,7 @@ function Xcm(): React.ReactElement {
         className="mb-4"
         layout="vertical"
         form={formBlocks}
-        initialValues={{ chain: config.selectedNetwork?.networkName, blockNumber: /*1254590*/ 1257765 }}
+        initialValues={{ chain: config.selectedNetwork?.networkName }}
         onFinish={searchXcm}
       >
         <Row gutter={30}>
