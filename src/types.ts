@@ -39,6 +39,6 @@ export interface ChainEvent {
   method: string
   description: string
   eventArguments: [string, any][]
-  phase: number
+  phase: any
   index: number
 }

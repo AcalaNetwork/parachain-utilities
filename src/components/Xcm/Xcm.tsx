@@ -74,7 +74,7 @@ function Xcm(): React.ReactElement {
 
       if (upwardMessage.length > 0) {
         setMessageType('Upward message')
-        setMessageSent(parseXcmMessage(upwardMessage[0]))
+        setMessageSent(senderApi.createType('XcmVersionedXcm', upwardMessage[0]).toString())
 
         await loadUpwardMessageEvents(senderApi, senderBlockHash, auxParentNetwork)
 
@@ -90,7 +90,7 @@ function Xcm(): React.ReactElement {
       if (horizontalMessage.length > 0) {
         const horizontalMessageHex = horizontalMessage[0].data as string
         setMessageType('Horizontal message')
-        setMessageSent(parseXcmMessage(horizontalMessageHex))
+        setMessageSent(senderApi.createType('XcmVersionedXcm', horizontalMessageHex).toString())
 
         await loadHorizontalMessageEvents(
           auxSenderNetwork,
@@ -132,6 +132,7 @@ function Xcm(): React.ReactElement {
     const latestBlock: Header = await parentApi.rpc.chain.getHeader()
     const currentRelayBlockNumber = latestBlock.number.toNumber()
     let newEvents: ChainEvent[] = []
+    let filteredEvents: ChainEvent[] = []
     let foundBlock = false
 
     while (relayBlockNumber <= currentRelayBlockNumber && relayBlockNumber <= maxParentBlock && !foundBlock) {
@@ -144,9 +145,12 @@ function Xcm(): React.ReactElement {
         ['system', 'ExtrinsicSuccess'],
       ])
 
-      for (const auxEvent of newEvents) {
-        if (auxEvent.section === 'ump' && auxEvent.method === 'UpwardMessagesReceived') {
+      for (const auxNewEvent of newEvents) {
+        // Search for upward message event
+        if (auxNewEvent.section === 'ump' && auxNewEvent.method === 'UpwardMessagesReceived') {
           foundBlock = true
+          // Filter events that have the same phase as the upward message
+          filteredEvents = newEvents.filter((otherEvent) => otherEvent.phase.eq(auxNewEvent.phase))
           break
         }
       }
@@ -155,7 +159,7 @@ function Xcm(): React.ReactElement {
 
     if (foundBlock) {
       setParentBlockNumber(relayBlockNumber)
-      setResults(newEvents)
+      setResults(filteredEvents)
     } else {
       message.info('No ump.UpwardMessageReceived event found in parent chain')
       setResults([])
@@ -201,7 +205,10 @@ function Xcm(): React.ReactElement {
             ) {
               foundBlock = true
               const auxParaId = parseInt(auxArg.candidate.commitments.horizontalMessages[0].recipient.replace(',', ''))
-              auxRecipientNetwork = config.networks.find((auxNetwork) => auxNetwork.paraId === auxParaId)
+              auxRecipientNetwork = config.networks.find(
+                (auxNetwork) =>
+                  auxNetwork.paraId === auxParaId && auxNetwork.parentNetworkName === parentNetwork.networkName
+              )
 
               if (!auxRecipientNetwork) {
                 message.error("Couldn't find recipient network info")
@@ -292,10 +299,6 @@ function Xcm(): React.ReactElement {
     setResults(newEvents)
   }
 
-  const parseXcmMessage = (encoded: string) => {
-    return Buffer.from(encoded.slice(2), 'hex').toString()
-  }
-
   const extractEventsFromBlock = (
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     blockRecords: Record<string, any>[],
@@ -332,7 +335,7 @@ function Xcm(): React.ReactElement {
           method,
           description: event.meta.docs[0].toString().replace(/\\/g, ''),
           eventArguments,
-          phase: phase.toJSON().applyExtrinsic,
+          phase,
           index: newEvents.length,
         })
       }
@@ -419,7 +422,7 @@ function Xcm(): React.ReactElement {
         className="mb-4"
         layout="vertical"
         form={formBlocks}
-        initialValues={{ chain: config.selectedNetwork?.networkName }}
+        initialValues={{ chain: config.selectedNetwork?.networkName, blockNumber: /*1254590*/ 1257765 }}
         onFinish={searchXcm}
       >
         <Row gutter={30}>
@@ -481,14 +484,12 @@ function Xcm(): React.ReactElement {
         </Row>
       )}
       {messageSent && (
-        <Row align="middle" className="mb-3">
-          <Col flex="0 0 200px" className="result-description">
-            Message sent:
-          </Col>
-          <Col flex="auto">
-            <pre className="mb-0">{formatWithJSONStringify(messageSent)}</pre>
-          </Col>
-        </Row>
+        <>
+          <Row className="mb-1">Message sent:</Row>
+          <Row align="middle" className="mb-3">
+            <pre className="message-sent-container mb-0">{formatWithJSONStringify(messageSent)}</pre>
+          </Row>
+        </>
       )}
       {parentNetwork && messageType && (
         <Row align="middle" className="mb-1">
