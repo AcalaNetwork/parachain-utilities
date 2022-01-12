@@ -1,5 +1,5 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
-import { Button, Form, Input, Modal, Row, Space, message, Spin } from 'antd'
+import { Button, Form, Input, Modal, Row, Select, Space, message, Spin } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { addNetwork } from '../../store/actions/configActions'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
@@ -12,6 +12,7 @@ type AddNetworkModalProps = {
 function AddNetworkModal(props: AddNetworkModalProps): React.ReactElement {
   const [form] = Form.useForm()
   const dispatch = useAppDispatch()
+  const config = useAppSelector((state) => state.config)
   const networks = useAppSelector((state) => state.config.networks)
   const [isLoading, setIsLoading] = useState(false)
   const { showModal, setShowModal } = props
@@ -37,8 +38,12 @@ function AddNetworkModal(props: AddNetworkModalProps): React.ReactElement {
         message.error("Error: Couldn't connect to endpoint")
         setIsLoading(false)
       })
-      await ApiPromise.create({ provider })
-      // const chainName = (await api.rpc.system.chain()).toString()
+      const api = await ApiPromise.create({ provider })
+      await api.isReady
+      let chainId
+      if (formValues.parentNetworkName) {
+        chainId = await api.query.parachainInfo.parachainId()
+      }
       provider.disconnect()
 
       dispatch(
@@ -50,6 +55,8 @@ function AddNetworkModal(props: AddNetworkModalProps): React.ReactElement {
               enabled: true,
             },
           ],
+          paraId: Number(chainId && chainId.toString()) || 0,
+          parentNetworkName: formValues.parentNetworkName || undefined,
           enabled: true,
         })
       )
@@ -109,6 +116,21 @@ function AddNetworkModal(props: AddNetworkModalProps): React.ReactElement {
             ]}
           >
             <Input type="url" placeholder="Enter endpoint..." />
+          </Form.Item>
+          <Form.Item
+            label="Parent network"
+            name="parentNetworkName"
+          >
+            <Select>
+              <Select.Option value={''}>None</Select.Option>
+              {config.networks
+                .filter((network) => network.enabled)
+                .map((network, index) => (
+                  <Select.Option key={index} value={network.networkName}>
+                    {network.networkName}
+                  </Select.Option>
+                ))}
+            </Select>
           </Form.Item>
           <Form.Item className="mb-0">
             <Row justify="end">

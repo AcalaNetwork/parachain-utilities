@@ -116,6 +116,7 @@ const configReducer = (state = initialState, action: AnyAction): ConfigState => 
     case RESET_CONFIG:
       return {
         ...state,
+        selectedNetwork: undefined,
         networks: [],
       }
     default:

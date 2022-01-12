@@ -10,6 +10,7 @@ import Configuration from './Config/Configuration'
 import AverageBlockTime from './AverageBlockTime/AverageBlockTime'
 import BlockTime from './BlockTime/BlockTime'
 import BlockAuthor from './BlockAuthor/BlockAuthor'
+import Xcm from './Xcm/Xcm'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
 import { replaceText } from '../utils/UtilsFunctions'
 import { selectNetwork, setNetworkList } from '../store/actions/configActions'
@@ -32,11 +33,17 @@ function ParachainUtilities(): React.ReactElement {
   const loadDefaultEndpoints = () => {
     try {
       let newNetworks: PolkadotNetwork[] = []
+      let parentNetworkName
       // If config has no endpoint, load default configuration
-      if (!config.networks || config.networks.length === 0) {
+      if (!config.networks || config.networks.length === 0 || !config.networks.find(auxNetwork => !!auxNetwork.paraId)) {
         const networksMap: Record<string, PolkadotNetwork> = {}
         const externalList = createWsEndpoints(replaceText as TFunction)
         for (const auxEndpoint of externalList) {
+          const isParent = !auxEndpoint.isChild && !auxEndpoint.isHeader
+          // Save network name to set as parent of the following ones
+          if (isParent) {
+            parentNetworkName = auxEndpoint.text as string
+          }
           const networkName = auxEndpoint.text as string
           if (auxEndpoint.value && !auxEndpoint.isLightClient && !auxEndpoint.isUnreachable) {
             if (networksMap[networkName]) {
@@ -55,6 +62,8 @@ function ParachainUtilities(): React.ReactElement {
                     enabled: true,
                   },
                 ],
+                paraId: auxEndpoint.paraId || 0,
+                parentNetworkName: isParent ? undefined : parentNetworkName,
                 enabled: false,
               }
             }
@@ -100,6 +109,7 @@ function ParachainUtilities(): React.ReactElement {
               <Route exact path="/average-block-time" component={AverageBlockTime} />
               <Route exact path="/block-time" component={BlockTime} />
               <Route exact path="/block-author" component={BlockAuthor} />
+              <Route exact path="/xcm" component={Xcm} />
               <Route exact path="/config" component={Configuration} />
               <Redirect to="/address-book" />
             </Switch>

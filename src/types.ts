@@ -1,5 +1,3 @@
-import { HTMLProps, ReactNode } from 'react'
-
 export interface SubstrateAddress {
   name: string
   key: string
@@ -15,6 +13,8 @@ export interface PolkadotNetwork {
   networkName: string
   endpoints: RPCEndpoint[]
   enabled: boolean
+  paraId: number
+  parentNetworkName?: string
   prefix?: number
 }
 
@@ -32,4 +32,13 @@ export interface ConfigState {
 
 export interface AddressState {
   list: SubstrateAddress[]
+}
+
+export interface ChainEvent {
+  section: string
+  method: string
+  description: string
+  eventArguments: [string, any][]
+  phase: any
+  index: number
 }
