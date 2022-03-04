@@ -1,4 +1,4 @@
-import { DeleteOutlined, DotChartOutlined, PlusOutlined } from '@ant-design/icons'
+import { DeleteOutlined, DotChartOutlined, PlusOutlined, ProfileOutlined } from '@ant-design/icons'
 import { Button, Row, Space, Table } from 'antd'
 import React, { useState } from 'react'
 import { deleteAddress } from '../../store/actions/addressActions'
@@ -6,10 +6,12 @@ import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import { SubstrateAddress } from '../../types'
 import AddAddressModal from './AddAddressModal'
 import './AddressBook.less'
+import EncodeDecodeAddressModal from './EncodeDecodeAddressModal'
 import ViewFormatsModal from './ViewFormatsModal'
 
 function AddressBook(): React.ReactElement {
   const [showAddAddressModal, setShowAddAddressModal] = useState(false)
+  const [showEncodeDecodeAddressModal, setShowEncodeDecodeAddressModal] = useState(false)
   const [showViewFormatsModal, setShowViewFormatsModal] = useState(false)
   const [selectedAddress, setSelectedAddress] = useState<SubstrateAddress | undefined>()
   const dispatch = useAppDispatch()
@@ -17,6 +19,10 @@ function AddressBook(): React.ReactElement {
 
   const handleAddAddress = () => {
     setShowAddAddressModal(true)
+  }
+
+  const handleEncodeDecodeAddress = () => {
+    setShowEncodeDecodeAddressModal(true)
   }
 
   const handleViewFormats = (address: SubstrateAddress) => {
@@ -62,12 +68,18 @@ function AddressBook(): React.ReactElement {
   return (
     <div className="address-book-container">
       <Row className="mb-3">
-        <Button type="primary" onClick={handleAddAddress} icon={<PlusOutlined />}>
-          Add address
-        </Button>
+        <Space>
+          <Button type="primary" onClick={handleAddAddress} icon={<PlusOutlined />}>
+            Add address
+          </Button>
+          <Button type="primary" onClick={handleEncodeDecodeAddress} icon={<ProfileOutlined />}>
+            Encode/decode address
+          </Button>
+        </Space>
       </Row>
       <Table dataSource={addresses} columns={columns} rowKey="key" />
       <AddAddressModal showModal={showAddAddressModal} setShowModal={setShowAddAddressModal} />
+      <EncodeDecodeAddressModal showModal={showEncodeDecodeAddressModal} setShowModal={setShowEncodeDecodeAddressModal} />
       <ViewFormatsModal
         selectedAddress={selectedAddress}
         showModal={showViewFormatsModal}
