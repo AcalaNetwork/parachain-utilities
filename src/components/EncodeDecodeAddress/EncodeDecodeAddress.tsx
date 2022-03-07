@@ -24,7 +24,7 @@ function EncodeDecodeAddress(): React.ReactElement {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleEncodeAddress = async () => {
-    const input = formEncodeDecodeAddress.getFieldsValue().inputPossibleAddr?.toString().trim()
+    const input = formEncodeDecodeAddress.getFieldsValue().input1?.toString().trim()
     if (!input) {
       message.error('Please enter a valid address.')
       return
@@ -75,7 +75,7 @@ function EncodeDecodeAddress(): React.ReactElement {
   }
 
   const handleDecodeAddress = () => {
-    const input = formEncodeDecodeAddress.getFieldsValue().inputPossibleAddr?.toString().trim()
+    const input = formEncodeDecodeAddress.getFieldsValue().input1?.toString().trim()
     if (!input) {
       message.error('Please enter a valid address.')
       return
@@ -154,12 +154,12 @@ function EncodeDecodeAddress(): React.ReactElement {
         layout="horizontal"
         form={formEncodeDecodeAddress}
         initialValues={{
-          inputPossibleAddr: '',
+          input1: '',
         }}
       >
         <Form.Item
           label="Address"
-          name="inputPossibleAddr"
+          name="input1"
           rules={[
             {
               required: true,
