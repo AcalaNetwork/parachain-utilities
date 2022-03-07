@@ -62,11 +62,9 @@ function AddressBook(): React.ReactElement {
   return (
     <div className="address-book-container">
       <Row className="mb-3">
-        <Space>
-          <Button type="primary" onClick={handleAddAddress} icon={<PlusOutlined />}>
-            Add address
-          </Button>
-        </Space>
+        <Button type="primary" onClick={handleAddAddress} icon={<PlusOutlined />}>
+          Add address
+        </Button>
       </Row>
       <Table dataSource={addresses} columns={columns} rowKey="key" />
       <AddAddressModal showModal={showAddAddressModal} setShowModal={setShowAddAddressModal} />
