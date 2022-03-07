@@ -12,6 +12,7 @@ import {
   DELETE_ENDPOINT,
   TOGGLE_ENDPOINT,
   RESET_CONFIG,
+  SET_ENDPOINT_PREFIX,
 } from '../actions/configActions'
 
 const initialState: ConfigState = {
@@ -108,6 +109,19 @@ const configReducer = (state = initialState, action: AnyAction): ConfigState => 
                 }
                 return auxEndpoint
               }),
+            }
+          }
+          return auxNetwork
+        }),
+      }
+    case SET_ENDPOINT_PREFIX:
+      return {
+        ...state,
+        networks: state.networks.map((auxNetwork) => {
+          if (auxNetwork.networkName === action.payload.networkName) {
+            return {
+              ...auxNetwork,
+              prefix: action.payload.prefix
             }
           }
           return auxNetwork

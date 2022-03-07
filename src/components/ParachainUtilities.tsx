@@ -16,6 +16,7 @@ import { replaceText } from '../utils/UtilsFunctions'
 import { selectNetwork, setNetworkList } from '../store/actions/configActions'
 import { PolkadotNetwork } from '../types'
 import './ParachainUtilities.less'
+import EncodeDecodeAddress from './EncodeDecodeAddress/EncodeDecodeAddress'
 
 function ParachainUtilities(): React.ReactElement {
   const [isLoading, setIsLoading] = useState(false)
@@ -106,6 +107,7 @@ function ParachainUtilities(): React.ReactElement {
           <Layout.Content className="app-content">
             <Switch>
               <Route exact path="/address-book" component={AddressBook} />
+              <Route exact path="/encode-decode-address" component={EncodeDecodeAddress} />
               <Route exact path="/average-block-time" component={AverageBlockTime} />
               <Route exact path="/block-time" component={BlockTime} />
               <Route exact path="/block-author" component={BlockAuthor} />
