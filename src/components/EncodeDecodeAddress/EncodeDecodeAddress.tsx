@@ -1,4 +1,4 @@
-import { ArrowsAltOutlined, CopyOutlined, ShrinkOutlined } from '@ant-design/icons'
+import { ArrowsAltOutlined, CopyOutlined, LinkOutlined, ShrinkOutlined } from '@ant-design/icons'
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto/address'
 import { Button, Form, Input, message, Space, Table } from 'antd'
 import React, { useContext, useMemo, useState } from 'react'
@@ -24,7 +24,7 @@ function EncodeDecodeAddress(): React.ReactElement {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleEncodeAddress = async () => {
-    const input = formEncodeDecodeAddress.getFieldsValue().address?.toString().trim()
+    const input = formEncodeDecodeAddress.getFieldsValue().inputPossibleAddr?.toString().trim()
     if (!input) {
       message.error('Please enter a valid address.')
       return
@@ -75,7 +75,7 @@ function EncodeDecodeAddress(): React.ReactElement {
   }
 
   const handleDecodeAddress = () => {
-    const input = formEncodeDecodeAddress.getFieldsValue().address?.toString().trim()
+    const input = formEncodeDecodeAddress.getFieldsValue().inputPossibleAddr?.toString().trim()
     if (!input) {
       message.error('Please enter a valid address.')
       return
@@ -112,7 +112,20 @@ function EncodeDecodeAddress(): React.ReactElement {
       <CopyToClipboard onCopy={() => message.success('Address copied to Clipboard!')} text={row.address}>
         <Button type="default" size="middle" icon={<CopyOutlined />} />
       </CopyToClipboard>
-      <div>{row.address}</div>
+      <div>{row.address}
+          {row.chainName !== '-' &&
+            <>
+              {' - '}
+              <a
+                href={`https://${row.chainName.split(' ')[0]?.toLowerCase()}.subscan.io/account/${row.address}`}
+                rel='noopener noreferrer'
+                target='_blank'
+              >
+                Subscan <LinkOutlined />
+              </a>
+            </>
+          }
+        </div>
     </Space>
   }
 
@@ -131,7 +144,7 @@ function EncodeDecodeAddress(): React.ReactElement {
       title: 'Address',
       key: 'address',
       render: renderConvertedAddress,
-    },
+    }
   ]
 
   return (
@@ -141,12 +154,12 @@ function EncodeDecodeAddress(): React.ReactElement {
         layout="horizontal"
         form={formEncodeDecodeAddress}
         initialValues={{
-          address: '',
+          inputPossibleAddr: '',
         }}
       >
         <Form.Item
           label="Address"
-          name="address"
+          name="inputPossibleAddr"
           rules={[
             {
               required: true,
