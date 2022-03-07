@@ -11,6 +11,7 @@ export const TOGGLE_NETWORK = 'TOGGLE_NETWORK'
 export const ADD_ENDPOINT = 'ADD_ENDPOINT'
 export const DELETE_ENDPOINT = 'DELETE_ENDPOINT'
 export const TOGGLE_ENDPOINT = 'TOGGLE_ENDPOINT'
+export const SET_ENDPOINT_PREFIX = 'SET_ENDPOINT_PREFIX'
 export const RESET_CONFIG = 'RESET_CONFIG'
 
 export const setConfig = (config: ConfigState): AnyAction => {
@@ -89,6 +90,16 @@ export const toggleEndpoint = (networkName: string, endpointValue: string): AnyA
       networkName,
       endpointValue,
     },
+  }
+}
+
+export const setEndpointPrefix = (networkName: string, prefix: number): AnyAction => {
+  return {
+    type: SET_ENDPOINT_PREFIX,
+    payload: {
+      networkName,
+      prefix
+    }
   }
 }
 

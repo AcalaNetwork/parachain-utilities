@@ -27,18 +27,21 @@ function NavbarComponent(): React.ReactElement {
               <Link to="/address-book">Address Book</Link>
             </Menu.Item>
             <Menu.Item key="2">
-              <Link to="/average-block-time">Average Block Time</Link>
+              <Link to="/encode-decode-address">Encode/Decode Address</Link>
             </Menu.Item>
             <Menu.Item key="3">
-              <Link to="/block-time">Block Time</Link>
+              <Link to="/average-block-time">Average Block Time</Link>
             </Menu.Item>
             <Menu.Item key="4">
-              <Link to="/block-author">Block Author</Link>
+              <Link to="/block-time">Block Time</Link>
             </Menu.Item>
             <Menu.Item key="5">
-              <Link to="/xcm">XCM</Link>
+              <Link to="/block-author">Block Author</Link>
             </Menu.Item>
             <Menu.Item key="6">
+              <Link to="/xcm">XCM</Link>
+            </Menu.Item>
+            <Menu.Item key="7">
               <Link to="/config">Config</Link>
             </Menu.Item>
           </Menu>
